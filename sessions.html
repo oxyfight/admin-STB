@@ -14,6 +14,7 @@
         .card { border: none; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .status-toggle { cursor: pointer; }
         .table th { background-color: #f8fafc; color: var(--primary); font-weight: 700; }
+        .form-editable { min-height: 38px; border-radius: 6px; }
     </style>
 </head>
 <body>
@@ -35,14 +36,13 @@
             <h5 class="fw-bold text-primary mb-3"><i class="fas fa-plus-circle me-2"></i>เปิดหลักสูตร / รอบการอบรมรุ่นใหม่</h5>
             <form id="sessionForm" onsubmit="createNewGenSession(event)">
                 <div class="row g-3">
-                    <div class="col-md-2">
-                        <label class="form-label fw-bold">เลขรุ่น (Gen No.)</label>
-                        <!-- 🌟 เคลียร์ค่าว่างตามสั่ง -->
-                        <input type="number" class="form-control bg-light fw-bold text-center" id="setup_gen_no" required placeholder="เช่น 1" min="1">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">ชื่อรุ่น / รหัสการอบรม</label>
+                        <!-- 🌟 ปรับปรุงเป็น type="text" เพื่อให้พิมพ์รหัส เช่น 1/2569 หรือ 1/2570 ได้อย่างอิสระ -->
+                        <input type="text" class="form-control bg-light fw-bold text-center" id="setup_gen_no" required placeholder="เช่น 1/2569" style="font-size: 1.1rem; letter-spacing: 1px;">
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label fw-bold">เลือกวันที่จัดอบรม</label>
-                        <!-- 🌟 เปลี่ยนชนิดเป็นกล่องปฏิทิน คลิกเลือกวันที่เข้าใจง่าย -->
                         <input type="date" class="form-control bg-light" id="setup_date" required>
                     </div>
                     <div class="col-md-3">
@@ -56,11 +56,10 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label fw-bold">โควตาที่นั่ง (Seats)</label>
-                        <!-- 🌟 ปล่อยว่างไว้ให้แอดมินพิมพ์กำหนดเองตามจริง -->
                         <input type="number" class="form-control bg-light font-monospace fw-bold" id="setup_max" placeholder="ระบุจำนวนที่นั่ง" min="1" required>
                     </div>
-                    <div class="col-11 mt-3">
-                        <small class="text-muted"><i class="fas fa-info-circle me-1"></i> ระบบจะล็อกชื่อโครงการหลักสูตรเป็น <b>"STOP THE BLEED"</b> และแปลงวันที่เป็นภาษาไทยให้โดยอัตโนมัติ</small>
+                    <div class="col-12 mt-3">
+                        <small class="text-muted"><i class="fas fa-info-circle me-1"></i> ระบบจะล็อกชื่อโครงการหลักสูตรเป็น <b>"STOP THE BLEED"</b> และเมื่อเลือกปฏิทินจะแปลงเป็นคำภาษาไทยให้อัตโนมัติ</small>
                     </div>
                     <div class="col-12 mt-3 text-end">
                         <button type="submit" class="btn btn-success px-5 rounded-pill fw-bold shadow-sm">
@@ -71,23 +70,24 @@
             </form>
         </div>
 
-        <!-- ส่วนที่ 2: ตารางแสดงรอบการอบรมทั้งหมดที่มีในระบบคลาวด์ -->
+        <!-- ส่วนที่ 2: ตารางแสดงรอบการอบรมทั้งหมดพร้อมระบบ Inline-Editor เต็มพิกัด -->
         <div class="card p-4 shadow-sm border-0 bg-white">
             <h5 class="fw-bold text-dark mb-3"><i class="fas fa-list-alt me-2"></i>รายการโครงการอบรมที่เปิดระบบในปัจจุบัน</h5>
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
                     <thead>
                         <tr>
-                            <th width="100" class="text-center">รุ่น</th>
-                            <th>รายละเอียดหลักสูตร และวันเวลาจัดอบรม</th>
-                            <th width="150" class="text-center">สถานะเปิดรับสมัคร</th>
-                            <th width="130" class="text-center">โควตาที่นั่งทั้งหมด</th>
-                            <th width="130" class="text-center">คงเหลือ (ลงทะเบียนจริง)</th>
-                            <th width="120" class="text-center">จัดการ</th>
+                            <th width="140" class="text-center">ชื่อรุ่น / รหัสอบรม</th>
+                            <th width="240">วันที่จัดอบรม (ภาษาไทย)</th>
+                            <th width="150" class="text-center">ช่วงเวลา</th>
+                            <th width="150" class="text-center">สถานะเปิดระบบ</th>
+                            <th width="110" class="text-center">โควตาที่นั่ง</th>
+                            <th width="130" class="text-center">คงเหลือ (จองจริง)</th>
+                            <th width="110" class="text-center">จัดการ</th>
                         </tr>
                     </thead>
                     <tbody id="sessionTableBody">
-                        <tr><td colspan="6" class="text-center py-4 text-muted">กำลังโหลดข้อมูลรอบอบรม...</td></tr>
+                        <tr><td colspan="7" class="text-center py-4 text-muted">กำลังโหลดข้อมูลรอบอบรม...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -104,13 +104,13 @@
         loadOxyfightSessions();
     });
 
-    // ฟังก์ชันช่วยสำหรับการแปลงวันที่จากกล่องปฏิทิน (YYYY-MM-DD) เป็นภาษาไทยสากลอย่างเป็นทางการ
+    // ฟังก์ชันสำหรับแปลงวันที่จากกล่องปฏิทิน (YYYY-MM-DD) เป็นภาษาไทย
     function convertDateToThaiFormat(dateString) {
         if (!dateString) return "";
         const parts = dateString.split("-");
         if (parts.length !== 3) return dateString;
         
-        const year = parseInt(parts[0]) + 543; // แปลง ค.ศ. เป็น พ.ศ.
+        const year = parseInt(parts[0]) + 543; 
         const monthIndex = parseInt(parts[1]) - 1;
         const day = parseInt(parts[2]);
         
@@ -122,21 +122,20 @@
         return `${day} ${thaiMonths[monthIndex]} ${year}`;
     }
 
-    // 1️⃣ ดึงรายการรอบอบรมทั้งหมดขึ้นมาแสดงผลบนแผงควบคุมแอดมิน
+    // 1️⃣ ดึงรายการรอบอบรมทั้งหมดขึ้นมาแสดงผลพร้อมกล่องสำหรับคลิกแก้ไขข้อมูลได้สด ๆ
     async function loadOxyfightSessions() {
         const tbody = document.getElementById('sessionTableBody');
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4"><div class="spinner-border spinner-border-sm text-dark me-2"></div>กำลังดึงข้อมูลอบรมเซสชัน...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4"><div class="spinner-border spinner-border-sm text-dark me-2"></div>กำลังดึงข้อมูลอบรมเซสชัน...</td></tr>';
 
         try {
             const { data: sessions, error } = await supabaseClient
                 .from('sessions')
                 .select('*')
-                .order('gen_no', { ascending: false });
+                .order('id', { ascending: false }); // เรียงตามลำดับไอดีที่สร้างเข้าล่าสุด
 
             if (error) throw error;
-
             if (!sessions || sessions.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">ยังไม่มีรอบรุ่นการอบรมเปิดใช้งานในระบบหลังบ้าน</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">ยังไม่มีรอบรุ่นการอบรมเปิดใช้งานในระบบหลังบ้าน</td></tr>';
                 return;
             }
 
@@ -146,62 +145,75 @@
                     ? `<span class="badge bg-success status-toggle px-3 py-2 rounded-pill" onclick="toggleSessionState(${s.id}, 'Closed')"><i class="fas fa-eye me-1"></i> เปิดระบบ (Active)</span>`
                     : `<span class="badge bg-secondary status-toggle px-3 py-2 rounded-pill" onclick="toggleSessionState(${s.id}, 'Active')"><i class="fas fa-eye-slash me-1"></i> ปิดซ่อน (Closed)</span>`;
 
+                // ตัวเลือก Dropdown ดักความถูกต้องช่องแก้ไขช่วงเวลาจัดงานบนแถวตาราง
+                let optFull = s.training_time === 'เต็มวัน' ? 'selected' : '';
+                let optMorning = s.training_time === 'รอบเช้า' ? 'selected' : '';
+                let optAfternoon = s.training_time === 'รอบบ่าย' ? 'selected' : '';
+
                 tbody.innerHTML += `
-                    <tr>
-                        <td class="text-center fw-bold text-primary fs-5">รุ่นที่ ${s.gen_no}</td>
+                    <tr id="row_session_${s.id}">
+                        <td class="text-center fw-bold text-primary bg-light" style="font-size: 1.1rem;">${s.gen_no}</td>
                         <td>
-                            <b class="text-dark fs-6">${s.name}</b><br>
-                            <span class="text-muted small"><i class="fas fa-calendar-alt me-1"></i>วันที่: ${s.training_date || ''}</span><br>
-                            <span class="text-muted small"><i class="fas fa-clock me-1"></i>ช่วงเวลา: ${s.training_time || ''}</span>
+                            <!-- 🌟 กล่องอินพุตแก้ไขข้อความวันที่จัดอบรม -->
+                            <input type="text" class="form-control form-editable fw-bold text-dark bg-white" id="edit_date_${s.id}" value="${s.training_date || ''}">
+                        </td>
+                        <td>
+                            <!-- 🌟 เซลเลกเตอร์คลิกปรับเปลี่ยนช่วงเวลาอบรมจากตาราง -->
+                            <select class="form-select form-editable bg-white fw-bold" id="edit_time_${s.id}">
+                                <option value="เต็มวัน" ${optFull}>เต็มวัน</option>
+                                <option value="รอบเช้า" ${optMorning}>รอบเช้า</option>
+                                <option value="รอบบ่าย" ${optAfternoon}>รอบบ่าย</option>
+                            </select>
                         </td>
                         <td class="text-center">${statusBadge}</td>
                         <td class="text-center">
-                            <input type="number" class="form-control text-center bg-light fw-bold font-monospace mx-auto" style="width:90px;" id="max_seats_${s.id}" value="${s.max_seats}">
+                            <!-- 🌟 กล่องปรับโควตาที่นั่งสูงสุดประจำรุ่น -->
+                            <input type="number" class="form-control text-center bg-white fw-bold font-monospace mx-auto form-editable" style="width:85px;" id="max_seats_${s.id}" value="${s.max_seats}">
                         </td>
-                        <td class="text-center font-monospace fw-bold fs-6 text-dark">${s.available_seats} / ${s.max_seats}</td>
+                        <td class="text-center font-monospace fw-bold text-muted" style="font-size:0.95rem;">${s.available_seats} / ${s.max_seats} ที่นั่ง</td>
                         <td class="text-center">
-                            <button class="btn btn-sm btn-primary" onclick="saveInlineQuotaChange(${s.id}, ${s.max_seats}, ${s.available_seats})" title="กดบันทึกความจุที่นั่งใหม่"><i class="fas fa-save"></i></button>
-                            <button class="btn btn-sm btn-danger ms-1" onclick="deleteGenSession(${s.id}, ${s.gen_no})" title="กดลบรอบรุ่นอบรมนี้"><i class="fas fa-trash-alt"></i></button>
+                            <!-- 🌟 ปุ่มบันทึกการแก้ไขมติแบบเหมารวมทั้ง 3 มิติช่องงานในปุ่มเดียว -->
+                            <button class="btn btn-sm btn-primary" onclick="commitGlobalInlineUpdate(${s.id}, '${s.max_seats}', '${s.available_seats}')" title="กดบันทึกการเปลี่ยนแปลงทั้งหมด"><i class="fas fa-save"></i> บันทึก</button>
+                            <button class="btn btn-sm btn-outline-danger ms-1" onclick="deleteGenSession(${s.id}, '${s.gen_no}')" title="กดลบรอบรุ่นอบรมนี้"><i class="fas fa-trash-alt"></i></button>
                         </td>
                     </tr>`;
             });
 
         } catch (e) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">เกิดข้อผิดพลาดในการโหลดข้อมูล: ${e.message}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">เกิดข้อผิดพลาดในการโหลดข้อมูล: ${e.message}</td></tr>`;
         }
     }
 
-    // 2️⃣ ตรวจสอบรุ่นซ้ำและบันทึกเปิดรุ่นโครงการอบรมใหม่
+    // 2️⃣ ตรวจสอบรหัสซ้ำระดับอักษรและบันทึกเปิดรุ่นโครงการอบรมใหม่
     async function createNewGenSession(e) {
         e.preventDefault();
-        const genNo = parseInt(document.getElementById('setup_gen_no').value);
-        const rawDate = document.getElementById('setup_date').value; // ค่าที่ได้จากปฏิทิน (เช่น 2026-05-31)
+        const genNoStr = document.getElementById('setup_gen_no').value.trim(); // รับค่าเป็นข้อความ เช่น 1/2569
+        const rawDate = document.getElementById('setup_date').value; 
         const tTime = document.getElementById('setup_time').value;
         const maxSeats = parseInt(document.getElementById('setup_max').value);
 
-        // แปลงไฟล์วันที่จากปฏิทินกลายร่างเป็นรูปแบบข้อความภาษาไทยทันทีก่อนเขียนลงฐานข้อมูล
         const thaiFormattedDate = convertDateToThaiFormat(rawDate);
 
         try {
-            // 🛑 ตรวจสอบตารางหลังบ้านคลาวด์ก่อนว่าเลขรุ่นนี้ถูกใช้งานไปแล้วหรือยัง
+            // 🛑 ดักจับข้อมูล: เช็คกับระบบคลาวด์โดยอิงตามรหัสข้อความ String ว่ามีใครบันทึกคำนี้ไปแล้วหรือยัง
             const { data: duplicateCheck, error: checkError } = await supabaseClient
                 .from('sessions')
                 .select('id')
-                .eq('gen_no', genNo)
+                .eq('gen_no', genNoStr)
                 .maybeSingle();
 
             if (checkError) throw checkError;
             if (duplicateCheck) {
-                Swal.fire('เลขรุ่นนี้มีในระบบแล้ว!', `ขออภัยครับหลักสูตร [รุ่นที่ ${genNo}] ถูกตั้งค่าในระบบไปเรียบร้อยแล้ว ไม่สามารถสร้างซ้ำได้`, 'warning');
+                Swal.fire('รหัสรุ่นนี้มีอยู่แล้ว!', `ขออภัยครับหลักสูตรดีไซน์รหัส [รุ่น ${genNoStr}] ถูกตั้งค่าไว้ในระบบแล้ว ไม่สามารถกรอกซ้ำได้ครับ`, 'warning');
                 return;
             }
 
             const { error: insertError } = await supabaseClient
                 .from('sessions')
                 .insert([{
-                    gen_no: genNo,
-                    name: 'STOP THE BLEED', // ล็อกเป็นคำว่า STOP THE BLEED ทั้งหมด
-                    training_date: thaiFormattedDate, // บันทึกข้อความไทยเรียบร้อยสากล
+                    gen_no: genNoStr, // บันทึกข้อความอิสระลงในฐานข้อมูล
+                    name: 'STOP THE BLEED', 
+                    training_date: thaiFormattedDate, 
                     training_time: tTime,
                     max_seats: maxSeats,
                     available_seats: maxSeats,
@@ -210,7 +222,7 @@
 
             if (insertError) throw insertError;
 
-            Swal.fire('สำเร็จ', `เปิดหลักสูตร STOP THE BLEED รุ่นที่ ${genNo} เรียบร้อยแล้ว`, 'success');
+            Swal.fire('เปิดรุ่นสำเร็จ', `สร้างสิทธิ์เซสชันหลักสูตร STOP THE BLEED รุ่น ${genNoStr} เรียบร้อยครับ`, 'success');
             document.getElementById('sessionForm').reset();
             loadOxyfightSessions();
 
@@ -219,50 +231,65 @@
         }
     }
 
-    // 3️⃣ ฟังก์ชันแก้ไขปรับโควตาความจุที่นั่งคงเหลือ
-    async function saveInlineQuotaChange(id, oldMax, oldAvailable) {
-        const inputVal = parseInt(document.getElementById(`max_seats_${id}`).value);
-        if(!inputVal || inputVal < 1) { Swal.fire('ข้อมูลผิดพลาด', 'กรุณาระบุจำนวนโควตาที่ถูกต้อง', 'warning'); return; }
+    // 3️⃣ 🌟 ฟังก์ชันอัปเดตเหมารวม (วันที่, ช่วงเวลา, จำนวนผู้เรียน) จบงานในคลิกเดียว
+    async function commitGlobalInlineUpdate(id, oldMaxStr, oldAvailableStr) {
+        const oldMax = parseInt(oldMaxStr);
+        const oldAvailable = parseInt(oldAvailableStr);
 
-        const seatDifference = inputVal - oldMax;
+        // ดึงพิกัดค่าข้อมูลเวอร์ชันล่าสุดจากองค์ประกอบบนตารางแถวเดียวนั้น ๆ
+        const updatedDate = document.getElementById(`edit_date_${id}`).value.trim();
+        const updatedTime = document.getElementById(`edit_time_${id}`).value;
+        const inputMaxSeats = parseInt(document.getElementById(`max_seats_${id}`).value);
+
+        if(!updatedDate) { Swal.fire('ข้อมูลว่าง', 'กรุณาระบุข้อความวันที่จัดอบรม', 'warning'); return; }
+        if(!inputMaxSeats || inputMaxSeats < 1) { Swal.fire('ข้อมูลผิดพลาด', 'กรุณาระบุตัวเลขที่นั่งให้ถูกต้อง', 'warning'); return; }
+
+        // คำนวณรักษายอดโควตาคงเหลือป้องกันตัวเลือกหน้าเว็บสมัครพังค้างลูป
+        const seatDifference = inputMaxSeats - oldMax;
         const newAvailable = oldAvailable + seatDifference;
 
         if (newAvailable < 0) {
-            Swal.fire('ข้อจำกัดที่นั่ง', 'ไม่สามารถลดโควตาที่นั่งลงมาต่ำกว่าจำนวนผู้สมัครเรียนที่กดจองเข้ามาจริงในขณะนี้ได้ครับ', 'warning');
+            Swal.fire('ที่นั่งขัดข้อง', 'ไม่สามารถลดสัดส่วนโควตาลงมาต่ำกว่ายอดจำนวนผู้เข้าเรียนที่ทำการจองจริงไว้แล้วในขณะนี้ได้ครับ', 'warning');
             loadOxyfightSessions();
             return;
         }
 
         try {
+            // ปรับปรุงอัปเดตมติทั้ง 3 ช่องงานลงฐานข้อมูล Supabase ส่วนกลาง
             const { error } = await supabaseClient
                 .from('sessions')
-                .update({ max_seats: inputVal, available_seats: newAvailable })
+                .update({ 
+                    training_date: updatedDate, 
+                    training_time: updatedTime,
+                    max_seats: inputMaxSeats, 
+                    available_seats: newAvailable 
+                })
                 .eq('id', id);
 
             if (error) throw error;
-            Swal.fire({ title: 'ปรับปรุงแล้ว', text: 'แก้ไขข้อมูลโควตารอบสำเร็จ', icon: 'success', timer: 1200, showConfirmButton: false });
+            Swal.fire({ title: 'บันทึกสำเร็จ', text: 'ปรับปรุงข้อมูลเซสชันเรียบร้อยดี', icon: 'success', timer: 1200, showConfirmButton: false });
             loadOxyfightSessions();
         } catch(err) {
             Swal.fire('ล้มเหลว', err.message, 'error');
         }
     }
 
-    // 4️⃣ สลับสถานะเปิดโชว์/สับปิดซ่อนรอบการอบรม
+    // 4️⃣ สลับสถานะเปิดแสดงผล / ปิดซ่อนระบบรับสมัคร
     async function toggleSessionState(id, newState) {
         try {
             const { error } = await supabaseClient.from('sessions').update({ status: newState }).eq('id', id);
             if (error) throw error;
             loadOxyfightSessions();
         } catch(err) {
-            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถปรับเปลี่ยนสถานะรอบได้', 'error');
+            Swal.fire('ข้อผิดพลาด', 'ไม่สามารถสลับสถานะระบบได้', 'error');
         }
     }
 
-    // 5️⃣ ลบข้อมูลรอบการอบรมออกจากระบบคลาวด์ส่วนกลาง
-    async function deleteGenSession(id, genNo) {
+    // 5️⃣ ลบประวัติข้อมูลรอบการอบรมออกจากคลาวด์ส่วนกลาง
+    async function deleteGenSession(id, genNoText) {
         const confirmCheck = await Swal.fire({
             title: 'ยืนยันการลบรอบอบรม?',
-            html: `ต้องการลบข้อมูลโครงการอบรม <b>"รุ่นที่ ${genNo}"</b> ใช่หรือไม่?<br><span class="text-danger small">*คำเตือน: รายชื่อและประวัติคิวงานพิมพ์วุฒิบัตรในรุ่นนี้จะถูกล้างออกจากระบบทั้งหมดทันที!</span>`,
+            html: `ต้องการลบข้อมูลโครงการอบรม <b>"รุ่นที่ ${genNoText}"</b> ใช่หรือไม่?<br><span class="text-danger small">*คำเตือน: ข้อมูลและประวัติคิวพิมพ์วุฒิบัตรทับซ้อนในรุ่นนี้จะถูกล้างทำลายถาวร!</span>`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
