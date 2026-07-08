@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Participants List - OXYFIGHT CENTER</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #0b1a30; --accent: #dd2c00; }
+        body { font-family: 'Sarabun', sans-serif; background-color: #f0f4f8; }
+        .navbar { background: linear-gradient(135deg, #0b1a30, #142844); padding: 12px 0; }
+        .card { border: none; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .table th { background-color: #f8fafc; color: var(--primary); font-weight: 700; }
+        .badge-status { font-size: 0.85rem; padding: 6px 12px; border-radius: 30px; }
+    </style>
+</head>
+<body>
+
+    <!-- ส่วนหัวแถบ Navbar ประจำคลังแอดมิน OXYFIGHT -->
+    <nav class="navbar navbar-dark shadow-sm">
+        <div class="container d-flex justify-content-between align-items-center">
+            <span class="navbar-brand fw-bold d-flex align-items-center">
+                <img src="https://knfhgytkfshdmfdieczx.supabase.co/storage/v1/object/public/pic/OXYFIGHT_CENTER.png" alt="OXYFIGHT Logo" class="me-2" style="height:35px; object-fit:contain; filter: brightness(0) invert(1);">
+                OXYFIGHT - บัญชีรายชื่อผู้สมัครและส่งใบประกาศ
+            </span>
+            <a class="btn btn-sm btn-outline-light rounded-pill px-3 fw-bold" href="index.html"><i class="fas fa-arrow-left me-1"></i> กลับหน้าเมนูหลัก</a>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <div class="card p-4 shadow-sm border-0 bg-white">
+            
+            <!-- แผงควบคุมและคัดกรองข้อมูลประจำรุ่นอบรม -->
+            <div class="row align-items-end mb-4">
+                <div class="col-md-7">
+                    <label class="form-label fw-bold text-primary">เลือกหลักสูตรรอบรุ่นที่ต้องการตรวจสอบ (STOP THE BLEED)</label>
+                    <select class="form-select bg-light form-control-lg fw-bold" id="reportSessionSelect" onchange="loadParticipants()">
+                        <option value="">-- เลือกรอบรุ่นการอบรม --</option>
+                    </select>
+                </div>
+                <div class="col-md-5 text-md-end mt-3 mt-md-0">
+                    <button id="btnBulkEmail" class="btn btn-primary btn-lg rounded-pill fw-bold shadow-sm" onclick="sendBulkEmails()" disabled>
+                        <i class="fas fa-paper-plane me-2"></i> ส่งอีเมลใบประกาศ (ที่เลือก)
+                    </button>
+                </div>
+            </div>
+
+            <!-- ตารางแสดงบัญชีรายชื่อผู้สมัครอบรม STB -->
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th width="50" class="text-center">
+                                <input class="form-check-input" type="checkbox" id="selectAllCheck" onchange="toggleSelectAll(this)">
+                            </th>
+                            <th width="60" class="text-center">ลำดับ</th>
+                            <th>ชื่อ-นามสกุล (TH / EN) / อีเมลติดต่อ</th>
+                            <th width="140" class="text-center">สิทธิ์ภาพถ่าย (PDPA)</th>
+                            <th width="140" class="text-center">สถานะรายงานตัว</th>
+                            <th width="180" class="text-center">สถานะใบประกาศ</th>
+                            <th width="100" class="text-center">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="participantList">
+                        <tr><td colspan="7" class="text-center text-muted py-4">กรุณาเลือกรอบรุ่นการอบรมด้านบนเพื่อดึงรายชื่อแสดงผล</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+
+<script>
+    let fetchedParticipantsData = []; 
+    let currentSelectedGenNo = "1";
+
+    window.addEventListener('DOMContentLoaded', async () => {
+        // หมายเหตุ: เปิดให้รันข้ามระบบ AuthGuard เพื่อการทดสอบลูปฟังก์ชันระบบได้ทันทีตามข้อตกลง
+        loadSessionsForReport();
+    });
+
+    // ดึงเฉพาะหัวข้อรอบอบรมที่เป็นหลักสูตร STOP THE BLEED มาคัดกรองแยกตามเลขรุ่น
+    async function loadSessionsForReport() {
+        const sel = document.getElementById('reportSessionSelect');
+        const { data: sessions, error } = await supabaseClient
+            .from('sessions')
+            .select('*')
+            .order('gen_no', { ascending: true });
+            
+        if (error) return;
+        sel.innerHTML = '<option value="">-- เลือกรอบรุ่นการอบรม --</option>';
+        sessions.forEach(s => { 
+            sel.innerHTML += `<option value="${s.id}" data-gen="${s.gen_no}">[รุ่นที่ ${s.gen_no}] ${s.name} (${s.training_date || 'ไม่ระบุวันที่'})</option>`; 
+        });
+    }
+
+    // โหลดประวัติบัญชีรายชื่อผู้สมัครและผูกสถานะคิวใบเซอร์คู่ขนาน
+    async function loadParticipants() {
+        const selectEl = document.getElementById('reportSessionSelect');
+        const sessionId = selectEl.value; 
+        if(!sessionId) {
+            document.getElementById('participantList').innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">กรุณาเลือกรอบรุ่นการอบรมด้านบนเพื่อดึงรายชื่อแสดงผล</td></tr>';
+            document.getElementById('btnBulkEmail').disabled = true;
+            return;
+        }
+
+        currentSelectedGenNo = selectEl.options[selectEl.selectedIndex].getAttribute('data-gen');
+        
+        const tbody = document.getElementById('participantList'); 
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4"><i class="fas fa-spinner fa-spin me-2"></i>กำลังดึงข้อมูลและเชื่อมโยงสถานะตารางควบคู่ระบบคลาวด์...</td></tr>';
+        document.getElementById('selectAllCheck').checked = false;
+        document.getElementById('btnBulkEmail').disabled = true;
+
+        // ดึงรายชื่อจากตารางหลัก registrations
+        const { data: regList, error: regError } = await supabaseClient
+            .from('registrations')
+            .select('*')
+            .eq('session_id', sessionId)
+            .order('created_at', { ascending: true });
+            
+        if(regError || !regList || regList.length === 0) { 
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">ยังไม่มีรายชื่อผู้ลงทะเบียนสมัครเรียนในรุ่นนี้</td></tr>'; 
+            return; 
+        }
+
+        // ดึงคิวงานวุฒิบัตรจากตาราง certificates_queue มาเพื่อนำลิงก์และสถานะมา Merge ประกบรายชื่อ
+        const { data: queueList } = await supabaseClient
+            .from('certificates_queue')
+            .select('registration_id, pdf_status, certificate_url');
+
+        tbody.innerHTML = '';
+        let mergedList = [];
+
+        regList.forEach((row) => {
+            const matchQueue = queueList ? queueList.find(q => String(q.registration_id) === String(row.id)) : null;
+            const certUrl = matchQueue ? matchQueue.certificate_url : null;
+            const pdfStatus = matchQueue ? matchQueue.pdf_status : 'none';
+
+            mergedList.push({
+                ...row,
+                pdf_status: pdfStatus,
+                cert_url: certUrl 
+            });
+        });
+
+        fetchedParticipantsData = mergedList;
+
+        mergedList.forEach((row, index) => {
+            let certBadge = '';
+            let actionBtn = '';
+
+            // ตรวจเช็คสถานะเพื่อปรับการแสดงผล Badge สีในตารางให้แอดมินเข้าใจง่าย
+            if (row.pdf_status === 'sent' || row.pdf_status === 'ส่งสำเร็จ') {
+                certBadge = `<span class="badge badge-status bg-success text-white"><i class="fas fa-envelope-open-text me-1"></i> ส่งอีเมลแล้ว</span>`;
+                actionBtn = `<a href="${row.cert_url}" target="_blank" class="btn btn-sm btn-outline-secondary" title="เปิดดูไฟล์ใน Google Drive"><i class="fab fa-google-drive"></i></a>
+                             <button class="btn btn-sm btn-outline-primary ms-1" onclick="sendSingleEmail('${row.id}')" title="ส่งอีเมลซ้ำใหม่อีกครั้ง"><i class="fas fa-sync-alt"></i></button>`;
+            } else if (row.cert_url && row.email) {
+                certBadge = `<span class="badge badge-status bg-info text-dark fw-bold"><i class="fas fa-file-pdf me-1"></i> เจนแล้ว (พร้อมส่ง)</span>`;
+                actionBtn = `<a href="${row.cert_url}" target="_blank" class="btn btn-sm btn-success text-white" title="เปิดดูไฟล์ใบประกาศ"><i class="fas fa-eye"></i></a>
+                             <button class="btn btn-sm btn-primary ms-1" onclick="sendSingleEmail('${row.id}')" title="กดส่งอีเมลคนนี้"><i class="fas fa-paper-plane"></i></button>`;
+            } else {
+                certBadge = `<span class="badge badge-status bg-warning text-dark"><i class="fas fa-clock me-1"></i> ยังไม่สร้างคิว</span>`;
+                actionBtn = `<button class="btn btn-sm btn-light" disabled title="ผู้เรียนยังไม่ได้มาเช็คอินทำไฟล์ตอนเช้า"><i class="fas fa-ban"></i></button>`;
+            }
+
+            let prefixStr = row.prefix ? row.prefix + " " : "";
+
+            tbody.innerHTML += `
+                <tr id="row_${row.id}">
+                    <td class="text-center">
+                        <input class="form-check-input row-checkbox" type="checkbox" value="${row.id}" ${(!row.cert_url) ? 'disabled' : ''} onchange="checkBulkButtonState()">
+                    </td>
+                    <td class="text-center fw-bold text-muted">${index + 1}</td>
+                    <td>
+                        <span class="fs-6 fw-bold text-dark">${row.full_name_th || ''}</span><br>
+                        <small class="text-muted">${prefixStr}${row.full_name_en || ''}</small><br>
+                        <small class="text-primary"><i class="fas fa-envelope me-1"></i>${row.email || 'ไม่มีข้อมูลอีเมล'}</small>
+                    </td>
+                    <td class="text-center">${row.photo_consent ? '<span class="text-success fw-bold">📸 ถ่ายได้</span>' : '<span class="text-danger fw-bold">❌ ห้ามถ่าย</span>'}</td>
+                    <td class="text-center">${row.is_checked_in ? '<span class="text-success fw-bold">✅ มาแล้ว</span>' : '<span class="text-muted">⏳ ยังไม่มา</span>'}</td>
+                    <td class="text-center">${certBadge}</td>
+                    <td class="text-center">${actionBtn}</td>
+                </tr>`;
+        });
+    }
+
+    function toggleSelectAll(master) {
+        const checkboxes = document.querySelectorAll('.row-checkbox');
+        checkboxes.forEach(cb => {
+            if(!cb.disabled) cb.checked = master.checked;
+        });
+        checkBulkButtonState();
+    }
+
+    function checkBulkButtonState() {
+        const checkedCount = document.querySelectorAll('.row-checkbox:checked').length;
+        const btn = document.getElementById('btnBulkEmail');
+        
+        if(checkedCount > 0) {
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fas fa-paper-plane me-2"></i> ส่งอีเมลใบประกาศที่เลือก (${checkedCount} คน)`;
+        } else {
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fas fa-paper-plane me-2"></i> ส่งอีเมลใบประกาศ (ที่เลือก)`;
+        }
+    }
+
+    // 1️⃣ คำสั่งกดส่งเดี่ยวรายบุคคลช่วงเย็น หรือ ยิงซ้ำกรณีอีเมลพิมพ์ผิด
+    async function sendSingleEmail(regId) {
+        const p = fetchedParticipantsData.find(item => String(item.id) === String(regId));
+        if(!p) return;
+
+        if(!confirm(`ยืนยันนำส่งอีเมลไฟล์ใบประกาศนียบัตรหลักสูตร STOP THE BLEED ไปยังคุณ: ${p.full_name_th} ใช่หรือไม่?`)) return;
+
+        const rowEl = document.getElementById(`row_${regId}`);
+        rowEl.style.opacity = '0.5';
+
+        try {
+            // ยิงคำสั่งส่งเมลเดี่ยวไปหา GAS แอดมิน (ตัวที่ 2)
+            const response = await fetch(CERT_STB_API, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: "sendCertEmail",
+                    id: String(p.id).trim(),
+                    gen_no: String(currentSelectedGenNo).trim(),
+                    course_key: "STB"
+                })
+            });
+            const res = await response.json();
+            
+            if(res.success) {
+                await supabaseClient
+                    .from('certificates_queue')
+                    .update({ pdf_status: 'ส่งสำเร็จ' })
+                    .eq('registration_id', p.id);
+
+                await supabaseClient
+                    .from('registrations')
+                    .update({ is_checked_out: true })
+                    .eq('id', p.id);
+
+                alert(`จัดส่งจดหมายและอัปเดตสถานะวุฒิบัตรสำเร็จเรียบร้อยแล้ว`);
+                loadParticipants();
+            } else {
+                throw new Error(res.error || "GAS System Rejected Request");
+            }
+        } catch(err) {
+            alert(`เกิดข้อผิดพลาดในการส่ง: ${err.message}`);
+            rowEl.style.opacity = '1';
+        }
+    }
+
+    // 2️⃣ คำสั่งสแกนคิวยิงส่งกลุ่มความเร็วสูง (Bulk Email Group จำกัดไม่เกิน 40 คน)
+    async function sendBulkEmails() {
+        const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+        if(checkedBoxes.length === 0) return;
+
+        const maxLimit = 40;
+        if(checkedBoxes.length > maxLimit) {
+            alert(`เพื่อความปลอดภัยและป้องกันโควตาเมลหลักติดสแปม จำกัดการส่งพร้อมกันสูงสุดไม่เกินรอบละ ${maxLimit} คนครับ`);
+            return;
+        }
+
+        if(!confirm(`คุณต้องการส่งอีเมลใบประกาศหาผู้เข้าอบรมทั้งหมดที่ติ๊กเลือก จำนวนรวม ${checkedBoxes.length} รายชื่อ ใช่หรือไม่?`)) return;
+
+        const btn = document.getElementById('btnBulkEmail');
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin me-2"></i> กำลังรันลำดับส่งกลุ่มจดหมายจำนวม ${checkedBoxes.length} คน...`;
+
+        let successCount = 0;
+
+        for (let cb of checkedBoxes) {
+            const regId = cb.value;
+            const p = fetchedParticipantsData.find(item => String(item.id) === String(regId));
+            
+            if(p && p.cert_url && p.email) {
+                try {
+                    // วนลูปยิงแบบเรียงคิวเข้าหาจุดส่ง GAS เพื่อให้ฟังก์ชันเบื้องหลังสลับตู้เมลเช็คโควตาทีละวินาทีได้แม่นยำ
+                    const response = await fetch(CERT_STB_API, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: "sendCertEmail",
+                            id: String(p.id).trim(),
+                            gen_no: String(currentSelectedGenNo).trim(),
+                            course_key: "STB"
+                        })
+                    });
+                    const res = await response.json();
+                    
+                    if(res.success) {
+                        await supabaseClient
+                            .from('certificates_queue')
+                            .update({ pdf_status: 'ส่งสำเร็จ' })
+                            .eq('registration_id', p.id);
+
+                        await supabaseClient
+                            .from('registrations')
+                            .update({ is_checked_out: true })
+                            .eq('id', p.id);
+                            
+                        successCount++;
+                    }
+                } catch(loopErr) {
+                    console.error("ลูปจัดส่งรายคนติดขัดรหัสไอดี: " + regId, loopErr);
+                }
+                // หน่วงเวลาเซนเซอร์เสี้ยววินาทีป้องกันทราฟฟิกฝั่งเซิร์ฟเวอร์กูเกิ้ลดีดสัญญานทิ้ง
+                await new Promise(resolve => setTimeout(resolve, 800));
+            }
+        }
+
+        alert(`ระบบปฏิบัติการส่งกลุ่มและปรับประวัติคลาวด์เสร็จสิ้น รวมทั้งสิ้น ${successCount} รายการพรีเมียม`);
+        loadParticipants();
+    }
+</script>
+</body>
+</html>
