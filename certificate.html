@@ -16,7 +16,7 @@
       max-w-full; 
       height: auto; 
       object-fit: contain; 
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
       border-radius: 0.75rem;
     }
   </style>
@@ -27,6 +27,7 @@
 
   <div class="max-w-7xl mx-auto space-y-6">
     
+    <!-- แผงส่วนหัวและส่วนคัดกรองเลือกรอบอบรม -->
     <div id="card" class="bg-white shadow-xl rounded-[2.5rem] p-8 border border-slate-100 animate-pop">
       <div class="flex flex-col lg:flex-row justify-between items-center gap-6">
         <div class="text-center lg:text-left flex flex-col sm:flex-row items-center gap-4">
@@ -48,6 +49,7 @@
       </div>
     </div>
 
+    <!-- แผงควบคุมกลุ่มย่อย (Batch Action Bar) สำหรับสั่ง GEN ช่วงเย็น -->
     <div id="batch-action-bar" class="hidden bg-indigo-50 border border-indigo-100 rounded-[2rem] p-6 flex flex-col sm:flex-row justify-between items-center gap-4 animate-pop shadow-md">
       <div class="flex items-center gap-3 text-indigo-800 font-bold">
         <div class="p-2.5 bg-indigo-500 text-white rounded-xl">
@@ -64,6 +66,7 @@
       </button>
     </div>
 
+    <!-- บล็อกแสดงตารางรายชื่อคิวงานคลาวด์ -->
     <div class="bg-white shadow-xl rounded-[2.5rem] overflow-hidden border border-slate-100 animate-pop" style="animation-delay: 0.1s;">
       <div class="p-6 md:p-8 border-b border-slate-50 flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-50/50">
         <h2 class="text-2xl font-extrabold text-slate-800 flex items-center gap-3">
@@ -102,8 +105,9 @@
 
   </div>
 
+  <!-- หน้าต่างป๊อปอัพพรีวิว (Live Canvas Preview Modal - ปรับโหมดเป็นสเกล 800*600) -->
   <div id="previewModal" class="fixed inset-0 bg-slate-900/60 h-full w-full hidden z-50 flex items-center justify-center backdrop-blur-sm transition-opacity p-4">
-    <div class="relative p-6 border w-full max-w-4xl shadow-2xl rounded-3xl bg-white animate-pop">
+    <div class="relative p-6 border w-full max-w-3xl shadow-2xl rounded-3xl bg-white animate-pop">
       <div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-100">
         <div>
           <h3 class="text-2xl font-extrabold text-slate-800">ตัวอย่างสัดส่วนจัดวางข้อมูลภาพก่อนออกจริง (STB)</h3>
@@ -113,12 +117,13 @@
         </button>
       </div>
       
-      <div class="mt-2 w-full flex justify-center items-center bg-slate-800 border border-slate-700 rounded-xl overflow-hidden relative min-h-[420px] p-2">
-        <div id="loadingText" class="text-center text-slate-400 font-medium absolute inset-0 flex flex-col items-center justify-center bg-slate-800/90 z-10 hidden">
+      <div class="mt-2 w-full flex justify-center items-center bg-slate-50 border border-slate-200 rounded-xl overflow-hidden relative min-h-[380px] p-1.5">
+        <div id="loadingText" class="text-center text-slate-500 font-medium absolute inset-0 flex flex-col items-center justify-center bg-slate-50/80 z-10 hidden">
           <svg class="animate-spin h-10 w-10 mb-3 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
           กำลังดึงภาพแม่แบบและสลักข้อความด้วย RAM...
         </div>
-        <canvas id="previewCanvas" width="1123" height="794" class="hidden"></canvas>
+        <!-- 🌟 ล็อกขนาดความกว้าง/สูงการแสดงผลบนโครงผ้าใบพรีวิวให้เป็น 800x600 พิกเซลพอดีตา -->
+        <canvas id="previewCanvas" width="800" height="600" class="shadow-inner rounded-xl hidden"></canvas>
       </div>
     </div>
   </div>
@@ -127,18 +132,19 @@
 <script src="config.js"></script>
 
 <script>
+    // 🎨 ลิงก์ไฟล์เทมเพลตภาพใบเซอร์แท้ชิ้นใหม่ตามสั่ง
     const TEMPLATE_IMAGE_URL = "https://knfhgytkfshdmfdieczx.supabase.co/storage/v1/object/public/pic/THANAMAOYMUANGHAK.png"; 
     
-    // 🖋️ แผงสำหรับควบคุมพิกัดอักษรสีดำบนผืนผ้าใบขนาด 1123 x 794
+    // 🖋️ 🌟 ชุดตั้งค่าตำแหน่งและขนาดฟอนต์ (ปรับแก้ให้ข้อความทั้งหมดเป็นสีดำ #000000 เรียบร้อยครับ)
     const TEXT_CONFIG = {
-      nameFont: "bold 32px 'Franklin Gothic Medium', 'Franklin Gothic', 'Libre Franklin', sans-serif", 
-      nameColor: "#000000",           
-      nameYOffset: 390,     // 🛠️ เลื่อน "ชื่อ" ขึ้น-ลง ตรงนี้ (ตัวเลขน้อยลง = ขยับขึ้นด้านบน)
-      dateFont: "18px 'Libre Franklin', sans-serif", 
-      dateColor: "#000000", 
-      dateYOffset: 505,     // 🛠️ เลื่อน "วันที่" ขึ้น-ลง ตรงนี้
+      nameFont: "bold 28px 'Franklin Gothic Medium', 'Franklin Gothic', 'Libre Franklin', sans-serif", 
+      nameColor: "#000000", // เปลี่ยนเป็นสีดำสนิทตามสั่ง          
+      nameYOffset: 295,     // 🛠️ ปรับตัวเลขนี้เพื่อเลื่อนระยะ "ชื่อ" ขึ้น-ลง (ค่าน้อยลง = ขยับขึ้น)
+      dateFont: "16px 'Libre Franklin', sans-serif", 
+      dateColor: "#000000", // เปลี่ยนเป็นสีดำสนิทตามสั่ง
+      dateYOffset: 380,     // 🛠️ ปรับตัวเลขนี้เพื่อเลื่อนระยะ "วันที่" ขึ้น-ลง
       align: "center",             
-      xOffset: 561.5        // พิกัดจุดกึ่งกลางแนวนอนของภาพ 1123 พิกเซล (1123 / 2)
+      xOffset: 400          
     };
 
     let localQueueData = [];
@@ -237,6 +243,7 @@
         });
     }
 
+    // 🌟 ฟังก์ชันวาดผ้าใบ Canvas พรีวิวอัจฉริยะ โหมดบีบอัดสเกล 800x600 สลิมตามสั่ง
     function fetchTextAndPreviewFast(index) {
         const row = localQueueData[index];
         if (!row) return;
@@ -249,24 +256,15 @@
         loader.classList.remove('hidden');
         modal.classList.remove('hidden'); 
 
-        let fullNameStr = (row.full_name_en || "ไม่ระบุชื่อ").toUpperCase();
-        
-        // 🌟 ดึงวันที่ไทยจริงจากตารางคิว หากยังไม่มี ให้ดึงวันที่จำลองเสมือนมาทดแทนชั่วคราว
-        let dateStr = row.training_date;
-        if(!dateStr || dateStr === "NULL" || dateStr === "null") {
-            const selectElement = document.getElementById('certSessionSelect');
-            const sessionText = selectElement.options[selectElement.selectedIndex].text;
-            // พยายามตัดข้อความดึงวันที่จัดจากชื่อ Dropdown แอดมิน (เช่น 8 กรกฎาคม 2569)
-            const matchDate = sessionText.match(/\(([^)]+)\)/);
-            dateStr = (matchDate && matchDate[1]) ? matchDate[1] : "8 กรกฎาคม 2569";
-        }
+        let fullNameStr = row.full_name_en || "ไม่ระบุชื่อ";
+        let dateStr = row.training_date || "27/05/2026"; 
 
         function drawCanvasContent(imgObj) {
             const ctx = canvas.getContext('2d');
             
-            // ล็อกขนาดแคนวาสแท้ให้อิงตาม Resolution จริงของภาพพื้นหลัง (1123 x 794) ภาพจะได้ครบไม่ตกขอบ
-            canvas.width = 1280;
-            canvas.height = 800;
+            // ล็อกพื้นที่ความกว้าง/สูงแคนวาสให้อยู่ที่ 800x600 แน่นอนสากลตามสั่ง
+            canvas.width = 800;
+            canvas.height = 600;
             
             ctx.clearRect(0, 0, canvas.width, canvas.height); 
             ctx.drawImage(imgObj, 0, 0, canvas.width, canvas.height); 
@@ -274,15 +272,17 @@
             ctx.textAlign = TEXT_CONFIG.align;
             ctx.textBaseline = "middle"; 
 
-            // 1. วาดพิมพ์สลัก "ชื่อนักเรียน" สีดำสนิท
+            // 1. สลักชื่อภาษาอังกฤษตัวหนาสีดำตรงพิกัดตามสเปก
             ctx.font = TEXT_CONFIG.nameFont;
             ctx.fillStyle = TEXT_CONFIG.nameColor;
             ctx.fillText(fullNameStr, TEXT_CONFIG.xOffset, TEXT_CONFIG.nameYOffset);
 
-            // 2. วาดพิมพ์สลัก "วันที่จัดอบรม" สีดำสนิท
+            // 2. สลักข้อความระบุวันที่สีดำตรงพิกัดตามสเปก
             ctx.font = TEXT_CONFIG.dateFont;
             ctx.fillStyle = TEXT_CONFIG.dateColor;
             ctx.fillText(dateStr, TEXT_CONFIG.xOffset, TEXT_CONFIG.dateYOffset);
+
+            // 🌟 ถอดฟังก์ชันการสลักเลขใบประกาศ และวันหมดอายุส่วนล่างออกทั้งหมดแล้วตามคำสั่ง
 
             loader.classList.add('hidden');
             canvas.classList.remove('hidden');
