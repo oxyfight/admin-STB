@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>จัดการใบประกาศ STB - RJRH TRAINING CENTER</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700;800&family=Times+New+Roman&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Sarabun', sans-serif; background: #f8fafc; }
     .animate-pop { animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
@@ -14,9 +14,9 @@
     td { font-size: 1rem !important; }
     #previewCanvas { 
       max-w-full; 
-      h-auto; 
-      object-contain; 
-      shadow-inner; 
+      height: auto; 
+      object-fit: contain; 
+      box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
       border-radius: 0.75rem;
     }
   </style>
@@ -105,9 +105,9 @@
 
   </div>
 
-  <!-- หน้าต่างป๊อปอัพพรีวิว (Live Canvas Preview Modal) -->
+  <!-- หน้าต่างป๊อปอัพพรีวิว (Live Canvas Preview Modal - ปรับโหมดเป็นสเกล 800*600) -->
   <div id="previewModal" class="fixed inset-0 bg-slate-900/60 h-full w-full hidden z-50 flex items-center justify-center backdrop-blur-sm transition-opacity p-4">
-    <div class="relative p-6 border w-full max-w-4xl shadow-2xl rounded-3xl bg-white animate-pop">
+    <div class="relative p-6 border w-full max-w-3xl shadow-2xl rounded-3xl bg-white animate-pop">
       <div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-100">
         <div>
           <h3 class="text-2xl font-extrabold text-slate-800">ตัวอย่างสัดส่วนจัดวางข้อมูลภาพก่อนออกจริง (STB)</h3>
@@ -117,12 +117,13 @@
         </button>
       </div>
       
-      <div class="mt-2 w-full flex justify-center items-center bg-slate-900 border border-slate-700 rounded-xl overflow-hidden relative min-h-[480px] p-2">
+      <div class="mt-2 w-full flex justify-center items-center bg-slate-50 border border-slate-200 rounded-xl overflow-hidden relative min-h-[380px] p-1.5">
         <div id="loadingText" class="text-center text-slate-500 font-medium absolute inset-0 flex flex-col items-center justify-center bg-slate-50/80 z-10 hidden">
           <svg class="animate-spin h-10 w-10 mb-3 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
           กำลังดึงภาพแม่แบบและสลักข้อความด้วย RAM...
         </div>
-        <canvas id="previewCanvas" width="1920" height="1080" class="max-w-full h-auto object-contain shadow-inner rounded-xl hidden"></canvas>
+        <!-- 🌟 ล็อกขนาดความกว้าง/สูงการแสดงผลบนโครงผ้าใบพรีวิวให้เป็น 800x600 พิกเซลพอดีตา -->
+        <canvas id="previewCanvas" width="800" height="600" class="shadow-inner rounded-xl hidden"></canvas>
       </div>
     </div>
   </div>
@@ -131,23 +132,19 @@
 <script src="config.js"></script>
 
 <script>
-    // 🌟 อัปเดต: สลับสับเปลี่ยนลิงก์รูปภาพแม่แบบใบประกาศพรีวิวหลังบ้านตามสั่งเรียบร้อยดีสากล
+    // 🎨 ลิงก์ไฟล์เทมเพลตภาพใบเซอร์แท้ชิ้นใหม่ตามสั่ง
     const TEMPLATE_IMAGE_URL = "https://knfhgytkfshdmfdieczx.supabase.co/storage/v1/object/public/pic/THANAMAOYMUANGHAK.png"; 
     
-    // 🖋️ พิกัดอักษรและเฉดสีตัวหนาสำหรับยิงประกอบโครงสร้างภาพผืนแคนวาส (1920x1080)
+    // 🖋️ 🌟 ชุดตั้งค่าตำแหน่งและขนาดฟอนต์ (ปรับแก้ให้ข้อความทั้งหมดเป็นสีดำ #000000 เรียบร้อยครับ)
     const TEXT_CONFIG = {
-      nameFont: "bold 56px 'Times New Roman', sans-serif", 
-      nameColor: "#071f54",            
-      nameYOffset: 490, 
-      dateFont: "italic 28px 'Times New Roman', 'Sarabun', sans-serif", 
-      dateColor: "#475569", 
-      dateYOffset: 580, 
-      cerIdFont: "bold 24px 'Times New Roman', sans-serif",
-      cerIdColor: "#000000",
-      expFont: "22px 'Sarabun', sans-serif",
-      expColor: "#64748b",
-      alignCenter: "center",             
-      alignLeft: "left"
+      nameFont: "bold 28px 'Franklin Gothic Medium', 'Franklin Gothic', 'Libre Franklin', sans-serif", 
+      nameColor: "#000000", // เปลี่ยนเป็นสีดำสนิทตามสั่ง          
+      nameYOffset: 295,     // 🛠️ ปรับตัวเลขนี้เพื่อเลื่อนระยะ "ชื่อ" ขึ้น-ลง (ค่าน้อยลง = ขยับขึ้น)
+      dateFont: "16px 'Libre Franklin', sans-serif", 
+      dateColor: "#000000", // เปลี่ยนเป็นสีดำสนิทตามสั่ง
+      dateYOffset: 380,     // 🛠️ ปรับตัวเลขนี้เพื่อเลื่อนระยะ "วันที่" ขึ้น-ลง
+      align: "center",             
+      xOffset: 400          
     };
 
     let localQueueData = [];
@@ -163,6 +160,8 @@
         preloadedTemplateImage = new Image();
         preloadedTemplateImage.crossOrigin = "Anonymous";
         preloadedTemplateImage.src = TEMPLATE_IMAGE_URL; 
+        document.fonts.load(TEXT_CONFIG.nameFont);
+        document.fonts.load(TEXT_CONFIG.dateFont);
     }
 
     async function loadSessions() {
@@ -244,7 +243,7 @@
         });
     }
 
-    // 🌟 ฟังก์ชันวาดผ้าใบ Canvas พรีวิวอัจฉริยะ ความละเอียดสูงคมชัด 100% (ฉบับแก้ไขอาการหมุนค้าง)
+    // 🌟 ฟังก์ชันวาดผ้าใบ Canvas พรีวิวอัจฉริยะ โหมดบีบอัดสเกล 800x600 สลิมตามสั่ง
     function fetchTextAndPreviewFast(index) {
         const row = localQueueData[index];
         if (!row) return;
@@ -257,55 +256,33 @@
         loader.classList.remove('hidden');
         modal.classList.remove('hidden'); 
 
-        let fullNameStr = (row.full_name_en || "ไม่ระบุชื่อ").toUpperCase();
-        
-        const now = new Date();
-        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        const virtualDateText = `On ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()} (Training day )`;
-        
-        let displayCerNo = row.cer_no || "STB-RUSH-QUEUE";
-        
-        let thaiExpDate = "";
-        if (row.exp_cer) {
-            thaiExpDate = new Date(row.exp_cer).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
-        } else {
-            const mockExp = new Date();
-            mockExp.setFullYear(mockExp.getFullYear() + 1);
-            thaiExpDate = mockExp.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
-        }
+        let fullNameStr = row.full_name_en || "ไม่ระบุชื่อ";
+        let dateStr = row.training_date || "27/05/2026"; 
 
         function drawCanvasContent(imgObj) {
-            // 🌟 แก้ไขพิกัด Context 2D และสั่งล็อกสเกลขนาดแคนวาสให้เท่าตัวต้นฉบับพรีเมียม 1920x1080
             const ctx = canvas.getContext('2d');
-            canvas.width = 1920;
-            canvas.height = 1080;
+            
+            // ล็อกพื้นที่ความกว้าง/สูงแคนวาสให้อยู่ที่ 800x600 แน่นอนสากลตามสั่ง
+            canvas.width = 800;
+            canvas.height = 600;
             
             ctx.clearRect(0, 0, canvas.width, canvas.height); 
             ctx.drawImage(imgObj, 0, 0, canvas.width, canvas.height); 
 
+            ctx.textAlign = TEXT_CONFIG.align;
             ctx.textBaseline = "middle"; 
 
-            // 1. สลักชื่อภาษาอังกฤษตัวหนาคมชัดตรงกึ่งกลางสากล
-            ctx.textAlign = TEXT_CONFIG.alignCenter;
+            // 1. สลักชื่อภาษาอังกฤษตัวหนาสีดำตรงพิกัดตามสเปก
             ctx.font = TEXT_CONFIG.nameFont;
             ctx.fillStyle = TEXT_CONFIG.nameColor;
-            ctx.fillText(fullNameStr, canvas.width / 2, TEXT_CONFIG.nameYOffset);
+            ctx.fillText(fullNameStr, TEXT_CONFIG.xOffset, TEXT_CONFIG.nameYOffset);
 
-            // 2. สลักข้อความระบุวันที่สากล
+            // 2. สลักข้อความระบุวันที่สีดำตรงพิกัดตามสเปก
             ctx.font = TEXT_CONFIG.dateFont;
             ctx.fillStyle = TEXT_CONFIG.dateColor;
-            ctx.fillText(virtualDateText, canvas.width / 2, TEXT_CONFIG.dateYOffset);
+            ctx.fillText(dateStr, TEXT_CONFIG.xOffset, TEXT_CONFIG.dateYOffset);
 
-            // 3. สลักหมายเลข Certificate ID ชิดมุมซ้ายล่าง
-            ctx.textAlign = TEXT_CONFIG.alignLeft;
-            ctx.font = TEXT_CONFIG.cerIdFont;
-            ctx.fillStyle = TEXT_CONFIG.cerIdColor;
-            ctx.fillText(`Certificate ID: ${displayCerNo}`, 145, 960);
-
-            // 4. สลักข้อความระบุวันหมดอายุคุ้มครอง 1 ปี
-            ctx.font = TEXT_CONFIG.expFont;
-            ctx.fillStyle = TEXT_CONFIG.expColor;
-            ctx.fillText(`วันหมดอายุใบประกาศ: ${thaiExpDate}`, 145, 995);
+            // 🌟 ถอดฟังก์ชันการสลักเลขใบประกาศ และวันหมดอายุส่วนล่างออกทั้งหมดแล้วตามคำสั่ง
 
             loader.classList.add('hidden');
             canvas.classList.remove('hidden');
