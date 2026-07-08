@@ -3,21 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>จัดการใบประกาศ STB - OXYFIGHT CENTER</title>
+  <title>จัดการใบประกาศ STB - RJRH TRAINING CENTER</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700;800&family=Times+New+Roman&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Sarabun', sans-serif; background: #f0f4f8; }
+    body { font-family: 'Sarabun', sans-serif; background: #f8fafc; }
     .animate-pop { animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
     @keyframes popIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     th { font-weight: 700 !important; font-size: 0.95rem !important; }
     td { font-size: 1rem !important; }
     #previewCanvas { 
-      width: 100%; 
-      height: auto; 
-      border: 2px solid #bf953f; 
-      border-radius: 8px; 
-      background-color: #fff;
+      max-w-full; 
+      h-auto; 
+      object-contain; 
+      shadow-inner; 
+      border-radius: 0.75rem;
     }
   </style>
 </head>
@@ -27,15 +27,16 @@
 
   <div class="max-w-7xl mx-auto space-y-6">
     
+    <!-- แผงส่วนหัวและส่วนคัดกรองเลือกรอบอบรม -->
     <div id="card" class="bg-white shadow-xl rounded-[2.5rem] p-8 border border-slate-100 animate-pop">
       <div class="flex flex-col lg:flex-row justify-between items-center gap-6">
         <div class="text-center lg:text-left flex flex-col sm:flex-row items-center gap-4">
-          <a href="index.html" class="p-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl transition-all active:scale-95 shadow-sm" title="กลับหน้าเมนูหลัก">
+          <a href="index.html" class="p-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl transition-all active:scale-95 shadow-sm" title="กลับหน้าหลัก">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7 7-7m8 14l-7-7 7-7"></path></svg>
           </a>
           <div>
             <h1 class="text-3xl font-extrabold text-slate-800">จัดการใบประกาศหลักสูตร [STB]</h1>
-            <p class="text-slate-500 font-medium">คลังระบบคัดกรอง ตรวจสอบ และพรีวิววุฒิบัตรอัจฉริยะ (Stop The Bleed)</p>
+            <p class="text-slate-500 font-medium">คัดกรองเฉพาะคิวงานและออกใบวุฒิบัตรสำหรับ Stop The Bleed</p>
           </div>
         </div>
         
@@ -48,6 +49,7 @@
       </div>
     </div>
 
+    <!-- แผงควบคุมกลุ่มย่อย (Batch Action Bar) สำหรับสั่ง GEN ช่วงเย็น -->
     <div id="batch-action-bar" class="hidden bg-indigo-50 border border-indigo-100 rounded-[2rem] p-6 flex flex-col sm:flex-row justify-between items-center gap-4 animate-pop shadow-md">
       <div class="flex items-center gap-3 text-indigo-800 font-bold">
         <div class="p-2.5 bg-indigo-500 text-white rounded-xl">
@@ -64,6 +66,7 @@
       </button>
     </div>
 
+    <!-- บล็อกแสดงตารางรายชื่อคิวงานคลาวด์ -->
     <div class="bg-white shadow-xl rounded-[2.5rem] overflow-hidden border border-slate-100 animate-pop" style="animation-delay: 0.1s;">
       <div class="p-6 md:p-8 border-b border-slate-50 flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-50/50">
         <h2 class="text-2xl font-extrabold text-slate-800 flex items-center gap-3">
@@ -87,7 +90,7 @@
                 <input type="checkbox" id="checkAllMaster" onclick="toggleSelectAll(this)" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 transition-all cursor-pointer">
               </th>
               <th class="p-6 text-center w-16">ลำดับ</th>
-              <th class="p-6">ข้อมูลผู้เข้ารับการอบรม (ENG เท่านั้น) / รหัสลงทะเบียน</th>
+              <th class="p-6">ชื่อ - นามสกุล (สำหรับพิมพ์บนวุฒิบัตรอังกฤษ)</th>
               <th class="p-6 text-center w-48">เลขที่ใบประกาศ</th>
               <th class="p-6 text-center w-44">สถานะคิวงาน</th>
               <th class="p-6 text-center w-64">การจัดการ</th>
@@ -102,6 +105,7 @@
 
   </div>
 
+  <!-- หน้าต่างป๊อปอัพพรีวิว (Live Canvas Preview Modal) -->
   <div id="previewModal" class="fixed inset-0 bg-slate-900/60 h-full w-full hidden z-50 flex items-center justify-center backdrop-blur-sm transition-opacity p-4">
     <div class="relative p-6 border w-full max-w-4xl shadow-2xl rounded-3xl bg-white animate-pop">
       <div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-100">
@@ -127,10 +131,10 @@
 <script src="config.js"></script>
 
 <script>
-    // 🎨 ดึงลิงก์ไฟล์เทมเพลตภาพใบเซอร์แท้ 16:9 แกนเดียวประจำโครงการ STOP THE BLEED
-    const TEMPLATE_IMAGE_URL = "https://knfhgytkfshdmfdieczx.supabase.co/storage/v1/object/public/pic/OXYFIGHT_BG_CERTIFICATE.png"; 
+    // 🌟 อัปเดต: สลับสับเปลี่ยนลิงก์รูปภาพแม่แบบใบประกาศพรีวิวหลังบ้านตามสั่งเรียบร้อยดีสากล
+    const TEMPLATE_IMAGE_URL = "https://knfhgytkfshdmfdieczx.supabase.co/storage/v1/object/public/pic/THANAMAOYMUANGHAK.png"; 
     
-    // 🖋️ กำหนดค่าสเกลพิกัดและเฉดสีตัวหนังสือสำหรับการสลักทับบน Canvas แท้ (1920x1080) เพื่อความคมชัดสูงสุด
+    // 🖋️ พิกัดอักษรและเฉดสีตัวหนาสำหรับยิงประกอบโครงสร้างภาพผืนแคนวาส (1920x1080)
     const TEXT_CONFIG = {
       nameFont: "bold 56px 'Times New Roman', sans-serif", 
       nameColor: "#071f54",            
@@ -148,7 +152,7 @@
 
     let localQueueData = [];
     let preloadedTemplateImage = null;
-    let currentSelectedGenNo = "1"; 
+    let currentSelectedGenNo = "1";
 
     window.addEventListener('DOMContentLoaded', async () => {
         loadSessions();
@@ -161,18 +165,16 @@
         preloadedTemplateImage.src = TEMPLATE_IMAGE_URL; 
     }
 
-    // ดึงเฉพาะหัวข้อรอบอบรมประจำหลักสูตร OXYFIGHT
     async function loadSessions() {
         const sel = document.getElementById('certSessionSelect');
         const { data: sessions, error } = await supabaseClient.from('sessions').select('*').order('id', { ascending: false });
         if (error) return;
-        sel.innerHTML = '<option value="">-- เลือกรอบอบรมเพื่อคัดกรองคิวงาน --</option>';
+        sel.innerHTML = '<option value="">-- เลือกรอบอบรมเพื่อจัดการใบประกาศ --</option>';
         sessions.forEach(s => { 
             sel.innerHTML += `<option value="${s.id}" data-gen="${s.gen_no}">[รุ่นที่ ${s.gen_no}] ${s.name} (${s.training_date || 'ไม่ระบุวันที่'})</option>`; 
         });
     }
 
-    // เรียกดึงคิวใบประกาศตรงรุ่นด้วยฟิลด์ session_id
     async function loadCertificatesQueue() {
         const selectElement = document.getElementById('certSessionSelect');
         const sessionId = selectElement.value; 
@@ -222,7 +224,7 @@
             tbody.innerHTML += `
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td class="p-6 text-center">
-                        <input type="checkbox" class="form-check-input row-select w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer transition-all" value="${row.registration_id}" data-index="${index}" ${(!row.registration_id) ? 'disabled' : ''} onclick="onRowSelectChange()">
+                        <input type="checkbox" class="form-check-input row-select w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer transition-all" value="${row.registration_id}" data-index="${index}" onclick="onRowSelectChange()">
                     </td>
                     <td class="p-6 font-bold text-slate-400 text-center">${index + 1}</td>
                     <td class="p-6">
@@ -242,7 +244,7 @@
         });
     }
 
-    // 🌟 ฟังก์ชันวาดผ้าใบ Canvas พรีวิวอัจฉริยะ ความละเอียดสูงคมชัด 100%
+    // 🌟 ฟังก์ชันวาดผ้าใบ Canvas พรีวิวอัจฉริยะ ความละเอียดสูงคมชัด 100% (ฉบับแก้ไขอาการหมุนค้าง)
     function fetchTextAndPreviewFast(index) {
         const row = localQueueData[index];
         if (!row) return;
@@ -257,7 +259,6 @@
 
         let fullNameStr = (row.full_name_en || "ไม่ระบุชื่อ").toUpperCase();
         
-        // ฟังก์ชันคำนวณจำลองข้อมูลเวลาแบบเสมือน (Fallback Preview) หากยังไม่มีค่าในระบบช่วงเช้า
         const now = new Date();
         const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         const virtualDateText = `On ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()} (Training day )`;
@@ -274,7 +275,11 @@
         }
 
         function drawCanvasContent(imgObj) {
+            // 🌟 แก้ไขพิกัด Context 2D และสั่งล็อกสเกลขนาดแคนวาสให้เท่าตัวต้นฉบับพรีเมียม 1920x1080
             const ctx = canvas.getContext('2d');
+            canvas.width = 1920;
+            canvas.height = 1080;
+            
             ctx.clearRect(0, 0, canvas.width, canvas.height); 
             ctx.drawImage(imgObj, 0, 0, canvas.width, canvas.height); 
 
@@ -310,6 +315,9 @@
             drawCanvasContent(preloadedTemplateImage);
         } else {
             preloadedTemplateImage.onload = function() { drawCanvasContent(preloadedTemplateImage); };
+            preloadedTemplateImage.onerror = function() {
+                preloadedTemplateImage.src = TEMPLATE_IMAGE_URL;
+            };
         }
     }
 
@@ -343,7 +351,6 @@
         document.getElementById('previewModal').classList.add('hidden'); 
     }
 
-    // 🌟 คำสั่งนำคิวยิงข้ามระบบไปให้ GAS แอดมิน (ตัวที่ 2) รันแปลงไฟล์ + นำส่งเมลในจังหวะเดียวกัน
     async function triggerGenSingle(regId) {
         const btn = document.getElementById(`btn_gen_${regId}`);
         const badge = document.getElementById(`badge_${regId}`);
@@ -367,7 +374,6 @@
             const result = await response.json();
             
             if (result.success) {
-                // ปรับเปลี่ยนประวัติฝั่ง Supabase คลุมครบสากล
                 await supabaseClient.from('certificates_queue').update({ pdf_status: 'ส่งสำเร็จ', certificate_url: result.pdfUrl, cer_no: result.cerNo }).eq('registration_id', regId);
                 await supabaseClient.from('registrations').update({ is_checked_out: true }).eq('id', regId);
 
@@ -387,7 +393,6 @@
         }
     }
 
-    // 🌟 คำสั่งรันกลุ่ม (Bulk Queue) สลับสับตู้ทำงานทีละคน
     async function triggerGenBatch() {
         const selectedCbs = Array.from(document.querySelectorAll('.row-select:checked'));
         if(selectedCbs.length === 0) return;
@@ -408,7 +413,7 @@
             if (res) cb.checked = false;
             
             if(i < selectedCbs.length - 1) {
-                await new Promise(resolve => setTimeout(resolve, 1000)); // หน่วงดีเลย์เซนเซอร์สากล
+                await new Promise(resolve => setTimeout(resolve, 1000)); 
             }
         }
         
