@@ -1,232 +1,420 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Certificate Queue - OXYFIGHT CENTER</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&family=Times+New+Roman&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root { --primary: #0b1a30; --accent: #b38728; }
-        body { font-family: 'Sarabun', sans-serif; background-color: #f0f4f8; }
-        .navbar { background: linear-gradient(135deg, #0b1a30, #142844); padding: 12px 0; }
-        .card { border: none; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .table th { background-color: #f8fafc; color: var(--primary); font-weight: 700; }
-        
-        /* สไตล์หน้าต่างพรีวิว Canvas ด้านใน Modal */
-        #certCanvas { 
-            width: 100%; 
-            height: auto; 
-            border: 2px solid #bf953f; 
-            border-radius: 8px; 
-            background-color: #fff;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>จัดการใบประกาศ STB - OXYFIGHT CENTER</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700;800&family=Times+New+Roman&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Sarabun', sans-serif; background: #f0f4f8; }
+    .animate-pop { animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    @keyframes popIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    th { font-weight: 700 !important; font-size: 0.95rem !important; }
+    td { font-size: 1rem !important; }
+    #previewCanvas { 
+      width: 100%; 
+      height: auto; 
+      border: 2px solid #bf953f; 
+      border-radius: 8px; 
+      background-color: #fff;
+    }
+  </style>
 </head>
-<body>
+<body class="min-h-screen py-10 px-4">
+  
+  <div id="toast-container" class="fixed bottom-5 right-5 z-[100] space-y-2 max-w-sm w-full"></div>
 
-    <nav class="navbar navbar-dark shadow-sm">
-        <div class="container d-flex justify-content-between align-items-center">
-            <span class="navbar-brand fw-bold d-flex align-items-center">
-                <img src="https://knfhgytkfshdmfdieczx.supabase.co/storage/v1/object/public/pic/OXYFIGHT_CENTER.png" alt="OXYFIGHT Logo" class="me-2" style="height:35px; object-fit:contain; filter: brightness(0) invert(1);">
-                OXYFIGHT - คลังระบบตรวจสอบและพรีวิววุฒิบัตร [STB]
-            </span>
-            <a class="btn btn-sm btn-outline-light rounded-pill px-3 fw-bold" href="index.html"><i class="fas fa-arrow-left me-1"></i> กลับหน้าเมนูหลัก</a>
+  <div class="max-w-7xl mx-auto space-y-6">
+    
+    <div id="card" class="bg-white shadow-xl rounded-[2.5rem] p-8 border border-slate-100 animate-pop">
+      <div class="flex flex-col lg:flex-row justify-between items-center gap-6">
+        <div class="text-center lg:text-left flex flex-col sm:flex-row items-center gap-4">
+          <a href="index.html" class="p-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl transition-all active:scale-95 shadow-sm" title="กลับหน้าเมนูหลัก">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7 7-7m8 14l-7-7 7-7"></path></svg>
+          </a>
+          <div>
+            <h1 class="text-3xl font-extrabold text-slate-800">จัดการใบประกาศหลักสูตร [STB]</h1>
+            <p class="text-slate-500 font-medium">คลังระบบคัดกรอง ตรวจสอบ และพรีวิววุฒิบัตรอัจฉริยะ (Stop The Bleed)</p>
+          </div>
         </div>
-    </nav>
-
-    <div class="container py-4">
-        <div class="card p-4 shadow-sm border-0 bg-white">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="fw-bold text-primary mb-0"><i class="fas fa-award me-2"></i>ประวัติคิวงานพิมพ์และส่งมอบใบประกาศนียบัตร</h5>
-                <button class="btn btn-dark rounded-pill fw-bold btn-sm px-3" onclick="loadCertificatesQueue()"><i class="fas fa-sync-alt me-1"></i> รีเฟรชสถานะคิว</button>
-            </div>
-
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead>
-                        <tr>
-                            <th width="60" class="text-center">คิวที่</th>
-                            <th width="150" class="text-center">เลขที่ใบประกาศ</th>
-                            <th>ข้อมูลผู้เข้ารับการอบรม (ENG เท่านั้น)</th>
-                            <th width="130" class="text-center">สถานะไฟล์คิว</th>
-                            <th width="140" class="text-center">วันเวลาทำรายการ</th>
-                            <th width="150" class="text-center">ปฏิบัติการ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="queueTableBody">
-                        <tr><td colspan="6" class="text-center py-4 text-muted">กำลังดึงข้อมูลประวัติคิวงาน...</td></tr>
-                    </tbody>
-                </table>
-            </div>
+        
+        <div class="w-full lg:w-auto max-w-md flex-grow">
+          <label class="block text-slate-600 font-bold mb-1.5 text-sm">เลือกรอบหลักสูตรอบรม STB</label>
+          <select id="certSessionSelect" onchange="loadCertificatesQueue()" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 font-extrabold rounded-xl shadow-sm transition-all cursor-pointer">
+            <option value="">-- เลือกรอบอบรมเพื่อคัดกรองคิวงาน --</option>
+          </select>
         </div>
+      </div>
     </div>
 
-    <div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg" style="max-width: 900px;">
-            <div class="modal-content" style="border-radius: 20px; overflow: hidden; border: none;">
-                <div class="modal-header bg-dark text-white py-3">
-                    <h5 class="modal-title fw-bold"><i class="fas fa-desktop text-warning me-2"></i>OXYFIGHT Live Canvas Preview</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body p-4 text-center" style="background-color: #1e293b;">
-                    <canvas id="certCanvas" width="1920" height="1080"></canvas>
-                    <div class="mt-3 text-light small opacity-75">
-                        <i class="fas fa-info-circle me-1"></i> ภาพจำลองพิกัดฟอนต์สลักชื่อและรหัส Cer ID บนหน่วยความจำเบราว์เซอร์ก่อนส่งออกจริง
-                    </div>
-                </div>
-                <div class="modal-footer bg-light py-2">
-                    <button type="button" class="btn btn-secondary rounded-pill px-4 fw-bold" data-bs-dismiss="modal">ปิดหน้าต่างพรีวิว</button>
-                </div>
-            </div>
+    <div id="batch-action-bar" class="hidden bg-indigo-50 border border-indigo-100 rounded-[2rem] p-6 flex flex-col sm:flex-row justify-between items-center gap-4 animate-pop shadow-md">
+      <div class="flex items-center gap-3 text-indigo-800 font-bold">
+        <div class="p-2.5 bg-indigo-500 text-white rounded-xl">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
         </div>
+        <div>
+          <div class="text-slate-700 text-sm">การทำงานแบบกลุ่มย่อย (ระบบล็อกความปลอดภัยก้อนละ 40 ใบ)</div>
+          <div class="text-indigo-900 text-lg">เลือกอยู่ทั้งหมด <span id="selected-count-text" class="text-2xl font-black text-indigo-600 mx-0.5">0</span> รายการ</div>
+        </div>
+      </div>
+      <button onclick="triggerGenBatch()" id="btnBatchGen" class="w-full sm:w-auto px-6 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold shadow-md transition-all active:scale-95 flex items-center justify-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        สั่งคิวรันออกใบประกาศพร้อมกัน (STB)
+      </button>
     </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <div class="bg-white shadow-xl rounded-[2.5rem] overflow-hidden border border-slate-100 animate-pop" style="animation-delay: 0.1s;">
+      <div class="p-6 md:p-8 border-b border-slate-50 flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-50/50">
+        <h2 class="text-2xl font-extrabold text-slate-800 flex items-center gap-3">
+          <span>รายชื่อในคิวงานพิมพ์วุฒิบัตร STB</span>
+          <span id="list-count" class="text-sm bg-indigo-50 text-indigo-600 font-bold px-3 py-1 rounded-full border border-indigo-100">0 รายการ</span>
+        </h2>
+        
+        <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
+          <button onclick="loadCertificatesQueue()" class="text-slate-600 hover:text-slate-800 bg-white font-bold flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 shadow-sm transition-all hover:shadow-md active:scale-95 w-full md:w-auto">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            รีเฟรชข้อมูลคิวล่าสุด
+          </button>
+        </div>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse min-w-[850px]">
+          <thead>
+            <tr class="bg-slate-100/50 text-slate-500 border-b border-slate-100">
+              <th class="p-6 text-center w-14">
+                <input type="checkbox" id="checkAllMaster" onclick="toggleSelectAll(this)" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 transition-all cursor-pointer">
+              </th>
+              <th class="p-6 text-center w-16">ลำดับ</th>
+              <th class="p-6">ข้อมูลผู้เข้ารับการอบรม (ENG เท่านั้น) / รหัสลงทะเบียน</th>
+              <th class="p-6 text-center w-48">เลขที่ใบประกาศ</th>
+              <th class="p-6 text-center w-44">สถานะคิวงาน</th>
+              <th class="p-6 text-center w-64">การจัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="certParticipantList" class="text-slate-700 divide-y divide-slate-100">
+            <tr><td colspan="6" class="p-10 text-center text-slate-400 font-medium italic">กรุณาเลือกรอบการอบรมด้านบนเพื่อดึงคิวงานจากตารางใบประกาศ</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="previewModal" class="fixed inset-0 bg-slate-900/60 h-full w-full hidden z-50 flex items-center justify-center backdrop-blur-sm transition-opacity p-4">
+    <div class="relative p-6 border w-full max-w-4xl shadow-2xl rounded-3xl bg-white animate-pop">
+      <div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-100">
+        <div>
+          <h3 class="text-2xl font-extrabold text-slate-800">ตัวอย่างสัดส่วนจัดวางข้อมูลภาพก่อนออกจริง (STB)</h3>
+        </div>
+        <button onclick="closePreviewModal()" class="text-slate-400 hover:text-rose-500 bg-slate-50 hover:bg-rose-50 transition-all duration-200 rounded-xl p-2 active:scale-95">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      
+      <div class="mt-2 w-full flex justify-center items-center bg-slate-900 border border-slate-700 rounded-xl overflow-hidden relative min-h-[480px] p-2">
+        <div id="loadingText" class="text-center text-slate-500 font-medium absolute inset-0 flex flex-col items-center justify-center bg-slate-50/80 z-10 hidden">
+          <svg class="animate-spin h-10 w-10 mb-3 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          กำลังดึงภาพแม่แบบและสลักข้อความด้วย RAM...
+        </div>
+        <canvas id="previewCanvas" width="1920" height="1080" class="max-w-full h-auto object-contain shadow-inner rounded-xl hidden"></canvas>
+      </div>
+    </div>
+  </div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 
 <script>
-    let previewModalObj;
+    // 🎨 ดึงลิงก์ไฟล์เทมเพลตภาพใบเซอร์แท้ 16:9 แกนเดียวประจำโครงการ STOP THE BLEED
+    const TEMPLATE_IMAGE_URL = "https://knfhgytkfshdmfdieczx.supabase.co/storage/v1/object/public/pic/OXYFIGHT_BG_CERTIFICATE.png"; 
+    
+    // 🖋️ กำหนดค่าสเกลพิกัดและเฉดสีตัวหนังสือสำหรับการสลักทับบน Canvas แท้ (1920x1080) เพื่อความคมชัดสูงสุด
+    const TEXT_CONFIG = {
+      nameFont: "bold 56px 'Times New Roman', sans-serif", 
+      nameColor: "#071f54",            
+      nameYOffset: 490, 
+      dateFont: "italic 28px 'Times New Roman', 'Sarabun', sans-serif", 
+      dateColor: "#475569", 
+      dateYOffset: 580, 
+      cerIdFont: "bold 24px 'Times New Roman', sans-serif",
+      cerIdColor: "#000000",
+      expFont: "22px 'Sarabun', sans-serif",
+      expColor: "#64748b",
+      alignCenter: "center",             
+      alignLeft: "left"
+    };
+
+    let localQueueData = [];
+    let preloadedTemplateImage = null;
+    let currentSelectedGenNo = "1"; 
 
     window.addEventListener('DOMContentLoaded', async () => {
-        previewModalObj = new bootstrap.Modal(document.getElementById('previewModal'));
-        loadCertificatesQueue();
+        loadSessions();
+        preloadTemplate(); 
     });
 
-    // ฟังก์ชันดึงประวัติงานพิมพ์วุฒิบัตรจากคลาวด์ Supabase
+    function preloadTemplate() {
+        preloadedTemplateImage = new Image();
+        preloadedTemplateImage.crossOrigin = "Anonymous";
+        preloadedTemplateImage.src = TEMPLATE_IMAGE_URL; 
+    }
+
+    // ดึงเฉพาะหัวข้อรอบอบรมประจำหลักสูตร OXYFIGHT
+    async function loadSessions() {
+        const sel = document.getElementById('certSessionSelect');
+        const { data: sessions, error } = await supabaseClient.from('sessions').select('*').order('id', { ascending: false });
+        if (error) return;
+        sel.innerHTML = '<option value="">-- เลือกรอบอบรมเพื่อคัดกรองคิวงาน --</option>';
+        sessions.forEach(s => { 
+            sel.innerHTML += `<option value="${s.id}" data-gen="${s.gen_no}">[รุ่นที่ ${s.gen_no}] ${s.name} (${s.training_date || 'ไม่ระบุวันที่'})</option>`; 
+        });
+    }
+
+    // เรียกดึงคิวใบประกาศตรงรุ่นด้วยฟิลด์ session_id
     async function loadCertificatesQueue() {
-        const tbody = document.getElementById('queueTableBody');
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4"><div class="spinner-border spinner-border-sm text-dark me-2"></div>กำลังเชื่อมโยงคลังประวัติคิว...</td></tr>';
+        const selectElement = document.getElementById('certSessionSelect');
+        const sessionId = selectElement.value; 
+        document.getElementById('checkAllMaster').checked = false;
+        updateBatchUI();
+        
+        if(!sessionId) return;
+        
+        currentSelectedGenNo = selectElement.options[selectElement.selectedIndex].getAttribute('data-gen');
+        const tbody = document.getElementById('certParticipantList'); 
+        tbody.innerHTML = '<tr><td colspan="6" class="p-10 text-center text-slate-400 font-medium italic"><svg class="animate-spin h-6 w-6 mx-auto mb-2 text-indigo-500" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>กำลังดึงคิวข้อมูลและเชื่อมโยงคลังตาราง Supabase...</td></tr>';
+        
+        const { data: list, error } = await supabaseClient
+            .from('certificates_queue')
+            .select('*')
+            .eq('session_id', sessionId)
+            .order('id', { ascending: true });
+            
+        if(error) { 
+            tbody.innerHTML = '<tr><td colspan="6" class="p-10 text-center text-rose-500 font-bold">เกิดข้อผิดพลาดในการโหลดตารางคิวงานใบประกาศ</td></tr>'; 
+            return; 
+        }
+        
+        localQueueData = list || [];
+        document.getElementById('list-count').innerText = `${localQueueData.length} รายการ`;
+        tbody.innerHTML = '';
+        
+        if(localQueueData.length === 0) { 
+            tbody.innerHTML = '<tr><td colspan="6" class="p-10 text-center text-slate-400 font-medium italic">ยังไม่มีข้อมูลคิวออกใบประกาศในรุ่นนี้ (กรุณาให้ผู้เรียนเช็คอินก่อน)</td></tr>'; 
+            return; 
+        }
 
-        try {
-            const { data: queue, error } = await supabaseClient
-                .from('certificates_queue')
-                .select('*')
-                .order('id', { ascending: false });
-
-            if (error) throw error;
-            if (!queue || queue.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">คลังระบบยังไม่มีประวัติคิวพิมพ์ใบประกาศค้างอยู่</td></tr>';
-                return;
+        localQueueData.forEach((row, index) => {
+            let statusBadge = `<span class="px-3 py-1.5 rounded-full text-xs font-bold border block w-full text-center truncate bg-slate-100 text-slate-500 border-slate-200" id="badge_${row.registration_id}">รอคิวตรวจ (เช้า)</span>`;
+            if (row.pdf_status === "กำลังเจน") {
+                statusBadge = `<span class="px-3 py-1.5 rounded-full text-xs font-bold border block w-full text-center truncate bg-indigo-100 text-indigo-700 border-indigo-200 animate-pulse" id="badge_${row.registration_id}">กำลังสร้าง...</span>`;
+            } else if (row.pdf_status === "ออกสำเร็จ" || row.pdf_status === "ส่งสำเร็จ" || row.certificate_url) {
+                statusBadge = `<span class="px-3 py-1.5 rounded-full text-xs font-bold border block w-full text-center truncate bg-green-100 text-green-700 border-green-200 shadow-sm" id="badge_${row.registration_id}">ออกสำเร็จ</span>`;
             }
 
-            tbody.innerHTML = '';
-            queue.forEach((q, index) => {
-                let statusBadge = '';
-                if (q.pdf_status === 'ส่งสำเร็จ' || q.pdf_status === 'sent') {
-                    statusBadge = '<span class="badge bg-success px-3 py-1.5 rounded-pill"><i class="fas fa-check-circle me-1"></i> ส่งเมลสำเร็จ</span>';
-                } else if (q.certificate_url) {
-                    statusBadge = '<span class="badge bg-info text-dark px-3 py-1.5 rounded-pill fw-bold"><i class="fas fa-file-pdf me-1"></i> ไฟล์พร้อม</span>';
-                } else {
-                    statusBadge = '<span class="badge bg-warning text-dark px-3 py-1.5 rounded-pill"><i class="fas fa-hourglass-half me-1"></i> รอคิวตรวจสอบ</span>';
-                }
+            let viewBtn = row.certificate_url 
+                ? `<a href="${row.certificate_url}" target="_blank" class="px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-800 rounded-xl text-xs font-bold border border-slate-200 active:scale-95 transition-all flex items-center gap-1" id="btn_view_${row.registration_id}">เปิดไฟล์</a>` 
+                : '';
 
-                let formattedTime = "ไม่ระบุ";
-                if(q.checked_out_date) {
-                    const dateObj = new Date(q.checked_out_date);
-                    formattedTime = dateObj.toLocaleDateString('th-TH', { 
-                        day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute:'2-digit' 
-                    }) + " น.";
-                }
+            let displayCerNo = row.cer_no || '<small class="text-slate-400 italic">รอรันช่วงเย็น</small>';
 
-                let driveBtn = q.certificate_url 
-                    ? `<a href="${q.certificate_url}" target="_blank" class="btn btn-sm btn-outline-success" title="เปิดดูไฟล์ต้นฉบับในกูเกิ้ลไดรฟ์"><i class="fab fa-google-drive"></i></a>` 
-                    : `<button class="btn btn-sm btn-light" disabled><i class="fab fa-google-drive"></i></button>`;
+            tbody.innerHTML += `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="p-6 text-center">
+                        <input type="checkbox" class="form-check-input row-select w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer transition-all" value="${row.registration_id}" data-index="${index}" ${(!row.registration_id) ? 'disabled' : ''} onclick="onRowSelectChange()">
+                    </td>
+                    <td class="p-6 font-bold text-slate-400 text-center">${index + 1}</td>
+                    <td class="p-6">
+                        <div class="font-extrabold text-slate-800 fs-6">${row.full_name_en}</div>
+                        <small class="text-slate-400 font-medium">รหัสลงทะเบียน: ${row.registration_id}</small>
+                    </td>
+                    <td class="p-6 text-center font-monospace fw-bold text-slate-700">${displayCerNo}</td>
+                    <td class="p-6 text-center">${statusBadge}</td>
+                    <td class="p-6 text-center">
+                        <div class="flex flex-wrap justify-center items-center gap-1.5">
+                            <button onclick="fetchTextAndPreviewFast(${index})" class="px-3 py-2 bg-sky-50 hover:bg-sky-100 text-sky-600 hover:text-sky-700 rounded-xl text-xs font-bold border border-sky-100 active:scale-95 transition-all flex items-center gap-1">พรีวิว</button>
+                            ${viewBtn}
+                            <button onclick="triggerGenSingle('${row.registration_id}')" id="btn_gen_${row.registration_id}" class="px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 hover:text-indigo-700 rounded-xl text-xs font-bold border border-indigo-100 active:scale-95 transition-all flex items-center gap-1">GEN</button>
+                        </div>
+                    </td>
+                </tr>`;
+        });
+    }
 
-                // จัดการแปลง Format วันหมดอายุไทยส่งเข้าไปวาดแคนวาส
-                let thaiExpDate = "-";
-                if (q.exp_cer) {
-                    const d = new Date(q.exp_cer);
-                    thaiExpDate = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
-                }
+    // 🌟 ฟังก์ชันวาดผ้าใบ Canvas พรีวิวอัจฉริยะ ความละเอียดสูงคมชัด 100%
+    function fetchTextAndPreviewFast(index) {
+        const row = localQueueData[index];
+        if (!row) return;
 
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="text-center fw-bold text-muted">${q.id}</td>
-                        <td class="text-center font-monospace fw-bold text-dark" style="letter-spacing:0.5px;">${q.cer_no || 'รอคำนวณ'}</td>
-                        <td>
-                            <b class="text-dark fs-6">${q.full_name_en || 'ไม่ระบุชื่อภาษาอังกฤษ'}</b><br>
-                            <small class="text-muted"><i class="fas fa-bookmark me-1"></i>รหัสลงทะเบียนหลัก: ${q.registration_id || ''}</small>
-                        </td>
-                        <td class="text-center">${statusBadge}</td>
-                        <td class="text-center small text-secondary">${formattedTime}</td>
-                        <td class="text-center">
-                            <div class="btn-group" role="group">
-                                ${driveBtn}
-                                <button class="btn btn-sm btn-primary" onclick="renderLiveCanvasPreview('${encodeURIComponent(q.full_name_en || '')}', '${encodeURIComponent(q.cer_no || '')}', '${encodeURIComponent(thaiExpDate)}')" title="กดพรีวิวสลักชื่อจำลองแคนวาส"><i class="fas fa-eye"></i> พรีวิว</button>
-                            </div>
-                        </td>
-                    </tr>`;
-            });
+        const modal = document.getElementById('previewModal');
+        const canvas = document.getElementById('previewCanvas');
+        const loader = document.getElementById('loadingText');
+        
+        canvas.classList.add('hidden');
+        loader.classList.remove('hidden');
+        modal.classList.remove('hidden'); 
 
-        } catch (e) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">เกิดข้อผิดพลาดในการเรียกดูคิว: ${e.message}</td></tr>`;
+        let fullNameStr = (row.full_name_en || "ไม่ระบุชื่อ").toUpperCase();
+        
+        // ฟังก์ชันคำนวณจำลองข้อมูลเวลาแบบเสมือน (Fallback Preview) หากยังไม่มีค่าในระบบช่วงเช้า
+        const now = new Date();
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const virtualDateText = `On ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()} (Training day )`;
+        
+        let displayCerNo = row.cer_no || "STB-RUSH-QUEUE";
+        
+        let thaiExpDate = "";
+        if (row.exp_cer) {
+            thaiExpDate = new Date(row.exp_cer).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
+        } else {
+            const mockExp = new Date();
+            mockExp.setFullYear(mockExp.getFullYear() + 1);
+            thaiExpDate = mockExp.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+
+        function drawCanvasContent(imgObj) {
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height); 
+            ctx.drawImage(imgObj, 0, 0, canvas.width, canvas.height); 
+
+            ctx.textBaseline = "middle"; 
+
+            // 1. สลักชื่อภาษาอังกฤษตัวหนาคมชัดตรงกึ่งกลางสากล
+            ctx.textAlign = TEXT_CONFIG.alignCenter;
+            ctx.font = TEXT_CONFIG.nameFont;
+            ctx.fillStyle = TEXT_CONFIG.nameColor;
+            ctx.fillText(fullNameStr, canvas.width / 2, TEXT_CONFIG.nameYOffset);
+
+            // 2. สลักข้อความระบุวันที่สากล
+            ctx.font = TEXT_CONFIG.dateFont;
+            ctx.fillStyle = TEXT_CONFIG.dateColor;
+            ctx.fillText(virtualDateText, canvas.width / 2, TEXT_CONFIG.dateYOffset);
+
+            // 3. สลักหมายเลข Certificate ID ชิดมุมซ้ายล่าง
+            ctx.textAlign = TEXT_CONFIG.alignLeft;
+            ctx.font = TEXT_CONFIG.cerIdFont;
+            ctx.fillStyle = TEXT_CONFIG.cerIdColor;
+            ctx.fillText(`Certificate ID: ${displayCerNo}`, 145, 960);
+
+            // 4. สลักข้อความระบุวันหมดอายุคุ้มครอง 1 ปี
+            ctx.font = TEXT_CONFIG.expFont;
+            ctx.fillStyle = TEXT_CONFIG.expColor;
+            ctx.fillText(`วันหมดอายุใบประกาศ: ${thaiExpDate}`, 145, 995);
+
+            loader.classList.add('hidden');
+            canvas.classList.remove('hidden');
+        }
+
+        if (preloadedTemplateImage && preloadedTemplateImage.complete) {
+            drawCanvasContent(preloadedTemplateImage);
+        } else {
+            preloadedTemplateImage.onload = function() { drawCanvasContent(preloadedTemplateImage); };
         }
     }
 
-    // 🌟 ฟังก์ชันวาดรูปโครงใบประกาศทับตัวแักษรสดด้วย RAM เบราว์เซอร์
-    function renderLiveCanvasPreview(encodedName, encodedCerNo, encodedExpDate) {
-        const nameStr = decodeURIComponent(encodedName).toUpperCase();
-        const cerNoStr = decodeURIComponent(encodedCerNo);
-        const expDateStr = decodeURIComponent(encodedExpDate);
+    function toggleSelectAll(master) {
+        const checkboxes = document.querySelectorAll('.row-select');
+        checkboxes.forEach(cb => cb.checked = master.checked);
+        updateBatchUI();
+    }
 
-        const now = new Date();
-        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        const dateTemplateText = `On ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()} (Training day )`;
+    function onRowSelectChange() {
+        const master = document.getElementById('checkAllMaster');
+        const checkboxes = document.querySelectorAll('.row-select');
+        const checkedCount = document.querySelectorAll('.row-select:checked').length;
+        master.checked = (checkedCount === checkboxes.length);
+        master.indeterminate = (checkedCount > 0 && checkedCount < checkboxes.length);
+        updateBatchUI();
+    }
 
-        const canvas = document.getElementById('certCanvas');
-        const ctx = canvas.getContext('2d');
+    function updateBatchUI() {
+        const checkedCount = document.querySelectorAll('.row-select:checked').length;
+        const bar = document.getElementById('batch-action-bar');
+        if (checkedCount > 0) {
+            document.getElementById('selected-count-text').innerText = checkedCount;
+            bar.classList.remove('hidden');
+        } else {
+            bar.classList.add('hidden');
+        }
+    }
 
-        // สั่งเคลียร์ผ้าใบแคนวาสเก่าออกก่อนเผื่อกดดูคนถัดไป
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    function closePreviewModal() {
+        document.getElementById('previewModal').classList.add('hidden'); 
+    }
 
-        // เปิดหน้าต่าง Pop-up Modal บล็อกขึ้นมาก่อนระหว่างรอรูปโหลด
-        previewModalObj.show();
+    // 🌟 คำสั่งนำคิวยิงข้ามระบบไปให้ GAS แอดมิน (ตัวที่ 2) รันแปลงไฟล์ + นำส่งเมลในจังหวะเดียวกัน
+    async function triggerGenSingle(regId) {
+        const btn = document.getElementById(`btn_gen_${regId}`);
+        const badge = document.getElementById(`badge_${regId}`);
+        
+        if(btn) { btn.disabled = true; btn.innerHTML = `...`; }
+        if(badge) { 
+            badge.className = "px-3 py-1.5 rounded-full text-xs font-bold border block w-full text-center truncate bg-indigo-100 text-indigo-700 border-indigo-200 animate-pulse"; 
+            badge.innerHTML = `กำลังเจน...`; 
+        }
 
-        const bgImg = new Image();
-        bgImg.crossOrigin = "anonymous";
-        bgImg.src = "https://knfhgytkfshdmfdieczx.supabase.co/storage/v1/object/public/pic/OXYFIGHT_BG_CERTIFICATE.png";
+        try {
+            const response = await fetch(CERT_STB_API, {
+                method: 'POST',
+                body: JSON.stringify({ 
+                    action: "sendCertEmail", 
+                    id: String(regId).trim(), 
+                    gen_no: String(currentSelectedGenNo).trim(), 
+                    course_key: "STB" 
+                })
+            });
+            const result = await response.json();
+            
+            if (result.success) {
+                // ปรับเปลี่ยนประวัติฝั่ง Supabase คลุมครบสากล
+                await supabaseClient.from('certificates_queue').update({ pdf_status: 'ส่งสำเร็จ', certificate_url: result.pdfUrl, cer_no: result.cerNo }).eq('registration_id', regId);
+                await supabaseClient.from('registrations').update({ is_checked_out: true }).eq('id', regId);
 
-        bgImg.onload = function() {
-            // 1. แปะภาพพื้นหลังใบเซอร์ดิบ
-            ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+                if(badge) { 
+                    badge.className = "px-3 py-1.5 rounded-full text-xs font-bold border block w-full text-center truncate bg-green-100 text-green-700 border-green-200 shadow-sm"; 
+                    badge.innerHTML = `ออกสำเร็จ`; 
+                }
+                return true;
+            } else { throw new Error(result.error || "GAS Rejected"); }
+        } catch(err) {
+            if(btn) { btn.disabled = false; btn.innerHTML = `GEN`; }
+            if(badge) { 
+                badge.className = "px-3 py-1.5 rounded-full text-xs font-bold border block w-full text-center truncate bg-rose-100 text-rose-700 border-rose-200"; 
+                badge.innerHTML = `ล้มเหลว`; 
+            }
+            return false;
+        }
+    }
 
-            // 2. สลักชื่อภาษาอังกฤษตัวหนาคมชัดตรงกึ่งกลาง
-            ctx.fillStyle = "#071f54"; 
-            ctx.font = "bold 56px 'Times New Roman', sans-serif"; 
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(nameStr, canvas.width / 2, 490);
+    // 🌟 คำสั่งรันกลุ่ม (Bulk Queue) สลับสับตู้ทำงานทีละคน
+    async function triggerGenBatch() {
+        const selectedCbs = Array.from(document.querySelectorAll('.row-select:checked'));
+        if(selectedCbs.length === 0) return;
+        
+        if(selectedCbs.length > 40) {
+            alert("ระบบล็อกความปลอดภัย จำกัดการสั่งงานพร้อมกันไม่เกินก้อนละ 40 ใบเพื่อป้องกันเซิร์ฟเวอร์ดีดครับ");
+            return;
+        }
 
-            // 3. สลักข้อความวันที่รูปแบบสากลของ OXYFIGHT
-            ctx.fillStyle = "#475569"; 
-            ctx.font = "italic 28px 'Times New Roman', 'Sarabun', sans-serif";
-            ctx.fillText(dateTemplateText, canvas.width / 2, 580);
+        const mainBtn = document.getElementById('btnBatchGen');
+        mainBtn.disabled = true;
+        mainBtn.innerHTML = `กำลังประมวลผลคิวกลุ่ม (${selectedCbs.length} รายการ)...`;
 
-            // 4. สลักหมายเลข Certificate ID ชิดมุมซ้ายล่าง
-            ctx.fillStyle = "#000000"; 
-            ctx.font = "bold 24px 'Times New Roman', 'Sarabun', sans-serif";
-            ctx.textAlign = "left"; 
-            ctx.fillText(`Certificate ID: ${cerNoStr}`, 145, 960);
-
-            // 5. สลักข้อความระบุวันหมดอายุ
-            ctx.fillStyle = "#64748b";
-            ctx.font = "22px 'Sarabun', sans-serif";
-            ctx.fillText(`วันหมดอายุใบประกาศ: ${expDateStr}`, 145, 995);
-        };
-
-        bgImg.onerror = function() {
-            ctx.fillStyle = "#ffffff";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "#000000";
-            ctx.font = "30px 'Sarabun', sans-serif";
-            ctx.textAlign = "center";
-            ctx.fillText("❌ ไม่สามารถดึงไฟล์พื้นหลังวุฒิบัตร OXYFIGHT ได้", canvas.width / 2, canvas.height / 2);
-        };
+        for (let i = 0; i < selectedCbs.length; i++) {
+            const cb = selectedCbs[i];
+            const regId = cb.value;
+            const res = await triggerGenSingle(regId);
+            if (res) cb.checked = false;
+            
+            if(i < selectedCbs.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, 1000)); // หน่วงดีเลย์เซนเซอร์สากล
+            }
+        }
+        
+        mainBtn.disabled = false;
+        mainBtn.innerHTML = `สั่งคิวรันออกใบประกาศพร้อมกัน (STB)`;
+        loadCertificatesQueue();
     }
 </script>
 </body>
