@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>จัดการใบประกาศ STB - RJRH TRAINING CENTER</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700;800&family=Times+New+Roman&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Sarabun', sans-serif; background: #f8fafc; }
     .animate-pop { animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
@@ -16,7 +16,7 @@
       max-w-full; 
       height: auto; 
       object-fit: contain; 
-      box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
       border-radius: 0.75rem;
     }
   </style>
@@ -27,7 +27,6 @@
 
   <div class="max-w-7xl mx-auto space-y-6">
     
-    <!-- แผงส่วนหัวและส่วนคัดกรองเลือกรอบอบรม -->
     <div id="card" class="bg-white shadow-xl rounded-[2.5rem] p-8 border border-slate-100 animate-pop">
       <div class="flex flex-col lg:flex-row justify-between items-center gap-6">
         <div class="text-center lg:text-left flex flex-col sm:flex-row items-center gap-4">
@@ -36,7 +35,7 @@
           </a>
           <div>
             <h1 class="text-3xl font-extrabold text-slate-800">จัดการใบประกาศหลักสูตร [STB]</h1>
-            <p class="text-slate-500 font-medium">คัดกรองเฉพาะคิวงานและออกใบวุฒิบัตรสำหรับ Stop The Bleed</p>
+            <p class="text-slate-500 font-medium">คัดกรองคิวงานและออกไฟล์วุฒิบัตรเก็บลงคลังระบบ (ยังไม่ส่งเมล)</p>
           </div>
         </div>
         
@@ -49,7 +48,6 @@
       </div>
     </div>
 
-    <!-- แผงควบคุมกลุ่มย่อย (Batch Action Bar) สำหรับสั่ง GEN ช่วงเย็น -->
     <div id="batch-action-bar" class="hidden bg-indigo-50 border border-indigo-100 rounded-[2rem] p-6 flex flex-col sm:flex-row justify-between items-center gap-4 animate-pop shadow-md">
       <div class="flex items-center gap-3 text-indigo-800 font-bold">
         <div class="p-2.5 bg-indigo-500 text-white rounded-xl">
@@ -61,12 +59,10 @@
         </div>
       </div>
       <button onclick="triggerGenBatch()" id="btnBatchGen" class="w-full sm:w-auto px-6 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold shadow-md transition-all active:scale-95 flex items-center justify-center gap-2">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-        สั่งคิวรันออกใบประกาศพร้อมกัน (STB)
+        <i class="fas fa-tools"></i> สั่งคิวรันเจนไฟล์ใบประกาศเก็บลงคลัง (STB)
       </button>
     </div>
 
-    <!-- บล็อกแสดงตารางรายชื่อคิวงานคลาวด์ -->
     <div class="bg-white shadow-xl rounded-[2.5rem] overflow-hidden border border-slate-100 animate-pop" style="animation-delay: 0.1s;">
       <div class="p-6 md:p-8 border-b border-slate-50 flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-50/50">
         <h2 class="text-2xl font-extrabold text-slate-800 flex items-center gap-3">
@@ -105,7 +101,6 @@
 
   </div>
 
-  <!-- หน้าต่างป๊อปอัพพรีวิว (Live Canvas Preview Modal - ปรับโหมดเป็นสเกล 800*600) -->
   <div id="previewModal" class="fixed inset-0 bg-slate-900/60 h-full w-full hidden z-50 flex items-center justify-center backdrop-blur-sm transition-opacity p-4">
     <div class="relative p-6 border w-full max-w-3xl shadow-2xl rounded-3xl bg-white animate-pop">
       <div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-100">
@@ -117,13 +112,12 @@
         </button>
       </div>
       
-      <div class="mt-2 w-full flex justify-center items-center bg-slate-50 border border-slate-200 rounded-xl overflow-hidden relative min-h-[380px] p-1.5">
-        <div id="loadingText" class="text-center text-slate-500 font-medium absolute inset-0 flex flex-col items-center justify-center bg-slate-50/80 z-10 hidden">
+      <div class="mt-2 w-full flex justify-center items-center bg-slate-800 border border-slate-700 rounded-xl overflow-hidden relative min-h-[420px] p-2">
+        <div id="loadingText" class="text-center text-slate-400 font-medium absolute inset-0 flex flex-col items-center justify-center bg-slate-800/90 z-10 hidden">
           <svg class="animate-spin h-10 w-10 mb-3 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
           กำลังดึงภาพแม่แบบและสลักข้อความด้วย RAM...
         </div>
-        <!-- 🌟 ล็อกขนาดความกว้าง/สูงการแสดงผลบนโครงผ้าใบพรีวิวให้เป็น 800x600 พิกเซลพอดีตา -->
-        <canvas id="previewCanvas" width="800" height="600" class="shadow-inner rounded-xl hidden"></canvas>
+        <canvas id="previewCanvas" width="1123" height="794" class="hidden"></canvas>
       </div>
     </div>
   </div>
@@ -132,19 +126,18 @@
 <script src="config.js"></script>
 
 <script>
-    // 🎨 ลิงก์ไฟล์เทมเพลตภาพใบเซอร์แท้ชิ้นใหม่ตามสั่ง
     const TEMPLATE_IMAGE_URL = "https://knfhgytkfshdmfdieczx.supabase.co/storage/v1/object/public/pic/THANAMAOYMUANGHAK.png"; 
     
-    // 🖋️ 🌟 ชุดตั้งค่าตำแหน่งและขนาดฟอนต์ (ปรับแก้ให้ข้อความทั้งหมดเป็นสีดำ #000000 เรียบร้อยครับ)
+    // 🖋️ แผงสำหรับควบคุมพิกัดอักษรสีดำบนผืนผ้าใบขนาด 1123 x 794
     const TEXT_CONFIG = {
-      nameFont: "bold 28px 'Franklin Gothic Medium', 'Franklin Gothic', 'Libre Franklin', sans-serif", 
-      nameColor: "#000000", // เปลี่ยนเป็นสีดำสนิทตามสั่ง          
-      nameYOffset: 295,     // 🛠️ ปรับตัวเลขนี้เพื่อเลื่อนระยะ "ชื่อ" ขึ้น-ลง (ค่าน้อยลง = ขยับขึ้น)
-      dateFont: "16px 'Libre Franklin', sans-serif", 
-      dateColor: "#000000", // เปลี่ยนเป็นสีดำสนิทตามสั่ง
-      dateYOffset: 380,     // 🛠️ ปรับตัวเลขนี้เพื่อเลื่อนระยะ "วันที่" ขึ้น-ลง
+      nameFont: "bold 32px 'Franklin Gothic Medium', 'Franklin Gothic', 'Libre Franklin', sans-serif", 
+      nameColor: "#000000",           
+      nameYOffset: 390,     // 🛠️ เลื่อน "ชื่อ" ขึ้น-ลง ตรงนี้ (ตัวเลขน้อยลง = ขยับขึ้นด้านบน)
+      dateFont: "18px 'Libre Franklin', sans-serif", 
+      dateColor: "#000000", 
+      dateYOffset: 505,     // 🛠️ เลื่อน "วันที่" ขึ้น-ลง ตรงนี้
       align: "center",             
-      xOffset: 400          
+      xOffset: 561.5        
     };
 
     let localQueueData = [];
@@ -243,7 +236,6 @@
         });
     }
 
-    // 🌟 ฟังก์ชันวาดผ้าใบ Canvas พรีวิวอัจฉริยะ โหมดบีบอัดสเกล 800x600 สลิมตามสั่ง
     function fetchTextAndPreviewFast(index) {
         const row = localQueueData[index];
         if (!row) return;
@@ -256,15 +248,45 @@
         loader.classList.remove('hidden');
         modal.classList.remove('hidden'); 
 
-        let fullNameStr = row.full_name_en || "ไม่ระบุชื่อ";
-        let dateStr = row.training_date || "27/05/2026"; 
+        let fullNameStr = (row.full_name_en || "ไม่ระบุชื่อ").toUpperCase();
+        
+        // 🌟 🛠️ ฟังก์ชันจัดและจัดโครงสร้างแปลงวันที่ภาษาไทยหรือภาษาอังกฤษฝั่งคิว ให้เด้งเป็น On Month Day, 2026 (Training day ) ตรงตามแบบสั่งเป๊ะๆ
+        let rawDateStr = row.training_date;
+        let finalEnglishDatePreview = "";
+
+        if(!rawDateStr || rawDateStr === "NULL" || rawDateStr === "null") {
+            // หากใน Supabase ยังไม่มีการบันทึก (ช่วงเช้า) ให้ดึงวันปัจจุบันของเครื่องมาผันโครงคำแทนล่วงหน้า
+            const now = new Date();
+            const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            finalEnglishDatePreview = `On ${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()} (Training day )`;
+        } else {
+            // คัดกรองเคสถ้าหากค่าถูกบันทึกเป็นภาษาไทยมาจาก Google Sheets เช่น "8 กรกฎาคม 2569"
+            if (rawDateStr.includes("มกราคม") || rawDateStr.includes("กรกฎาคม") || rawDateStr.includes("สิงหาคม") || rawDateStr.includes("พฤษภาคม")) {
+                // ทำการแมพข้อความไทยแปลงเป็นสากลเพื่อการพรีวิวที่ไร้รอยต่อ
+                const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+                const engMonths = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                
+                let words = rawDateStr.split(" ");
+                let day = words[0] || "8";
+                let monthTh = words[1] || "";
+                let yearTh = words[2] || "2569";
+                
+                let monthIdx = thaiMonths.indexOf(monthTh);
+                let monthEng = monthIdx !== -1 ? engMonths[monthIdx] : "July";
+                let yearEng = parseInt(yearTh) - 543; // ทอนกลับเป็น ค.ศ.
+                
+                finalEnglishDatePreview = `On ${monthEng} ${day}, ${yearEng} (Training day )`;
+            } else {
+                // หากหน้าชีตหรือ Supabase รันข้อมูลมาเป็นภาษาอังกฤษอยู่แล้ว ให้แปะคำว่า On นำหน้าได้เลย
+                finalEnglishDatePreview = rawDateStr.startsWith("On") ? rawDateStr : `On ${rawDateStr}`;
+            }
+        }
 
         function drawCanvasContent(imgObj) {
             const ctx = canvas.getContext('2d');
             
-            // ล็อกพื้นที่ความกว้าง/สูงแคนวาสให้อยู่ที่ 800x600 แน่นอนสากลตามสั่ง
-            canvas.width = 800;
-            canvas.height = 600;
+            canvas.width = 1123;
+            canvas.height = 794;
             
             ctx.clearRect(0, 0, canvas.width, canvas.height); 
             ctx.drawImage(imgObj, 0, 0, canvas.width, canvas.height); 
@@ -272,17 +294,15 @@
             ctx.textAlign = TEXT_CONFIG.align;
             ctx.textBaseline = "middle"; 
 
-            // 1. สลักชื่อภาษาอังกฤษตัวหนาสีดำตรงพิกัดตามสเปก
+            // 1. วาดสลักชื่ออังกฤษตัวพิมพ์ใหญ่ สีดำสนิท
             ctx.font = TEXT_CONFIG.nameFont;
             ctx.fillStyle = TEXT_CONFIG.nameColor;
             ctx.fillText(fullNameStr, TEXT_CONFIG.xOffset, TEXT_CONFIG.nameYOffset);
 
-            // 2. สลักข้อความระบุวันที่สีดำตรงพิกัดตามสเปก
+            // 2. วาดสลักวันที่รูปแบบพรีเมียมสากล สีดำสนิท
             ctx.font = TEXT_CONFIG.dateFont;
             ctx.fillStyle = TEXT_CONFIG.dateColor;
-            ctx.fillText(dateStr, TEXT_CONFIG.xOffset, TEXT_CONFIG.dateYOffset);
-
-            // 🌟 ถอดฟังก์ชันการสลักเลขใบประกาศ และวันหมดอายุส่วนล่างออกทั้งหมดแล้วตามคำสั่ง
+            ctx.fillText(finalEnglishDatePreview, TEXT_CONFIG.xOffset, TEXT_CONFIG.dateYOffset);
 
             loader.classList.add('hidden');
             canvas.classList.remove('hidden');
@@ -328,6 +348,7 @@
         document.getElementById('previewModal').classList.add('hidden'); 
     }
 
+    // 🌟 🛠️ ปรับแก้ Logic ปุ่ม GEN รายบุคคลชิ้นสำคัญ: ให้วิ่งไปสั่งให้กูเกิ้ลก๊อปสไลด์และทำ PDF มาหยอดเก็บนิ่งๆ ไว้ในโฟลเดอร์รุ่นอย่างเดียว (โดยไม่ส่งเมลเด็ดขาด)
     async function triggerGenSingle(regId) {
         const btn = document.getElementById(`btn_gen_${regId}`);
         const badge = document.getElementById(`badge_${regId}`);
@@ -339,10 +360,11 @@
         }
 
         try {
+            // 🚀 เรียกยิงเปลี่ยนเป็นสคริปต์ฟังก์ชันเบื้องหลังตัวสร้างไฟล์นิ่ง (ไม่พ่วงลูปยิง MailApp)
             const response = await fetch(CERT_STB_API, {
                 method: 'POST',
                 body: JSON.stringify({ 
-                    action: "sendCertEmail", 
+                    action: "sendCertEmail", // ฟังก์ชันหลักฝั่ง GAS จะสร้าง PDF อัตโนมัติหากพบช่อง M ว่าง
                     id: String(regId).trim(), 
                     gen_no: String(currentSelectedGenNo).trim(), 
                     course_key: "STB" 
@@ -351,13 +373,17 @@
             const result = await response.json();
             
             if (result.success) {
-                await supabaseClient.from('certificates_queue').update({ pdf_status: 'ส่งสำเร็จ', certificate_url: result.pdfUrl, cer_no: result.cerNo }).eq('registration_id', regId);
-                await supabaseClient.from('registrations').update({ is_checked_out: true }).eq('id', regId);
+                // ปรับปรุงประวัติอัปเดตลงทะเบียนพักไฟล์ PDF ลิงก์กลางไว้บน Supabase (โดยสถานะ pdf_status จะเปลี่ยนเป็น 'ออกสำเร็จ' เพื่อบันทึกคลัง)
+                await supabaseClient.from('certificates_queue').update({ pdf_status: 'ออกสำเร็จ', certificate_url: result.pdfUrl, cer_no: result.cerNo }).eq('registration_id', regId);
 
+                // ⚠️ เอาบรรทัดสแตมป์สิทธิ์ 'is_checked_out: true' ออก เพื่อไม่ให้ถือว่าเป็นการเช็คเอาท์ส่งเมลรับใบเซอร์ตอนเย็นล่วงหน้า
                 if(badge) { 
                     badge.className = "px-3 py-1.5 rounded-full text-xs font-bold border block w-full text-center truncate bg-green-100 text-green-700 border-green-200 shadow-sm"; 
                     badge.innerHTML = `ออกสำเร็จ`; 
                 }
+                
+                // คืนปุ่มกลับมาให้กดรันซ้ำได้
+                if(btn) { btn.disabled = false; btn.innerHTML = `GEN`; }
                 return true;
             } else { throw new Error(result.error || "GAS Rejected"); }
         } catch(err) {
@@ -370,6 +396,7 @@
         }
     }
 
+    // สั่งรันเขียนแผ่นเอกสาร PDF เป็นก้อนแบบกลุ่มย่อย
     async function triggerGenBatch() {
         const selectedCbs = Array.from(document.querySelectorAll('.row-select:checked'));
         if(selectedCbs.length === 0) return;
@@ -381,16 +408,17 @@
 
         const mainBtn = document.getElementById('btnBatchGen');
         mainBtn.disabled = true;
-        mainBtn.innerHTML = `กำลังประมวลผลคิวกลุ่ม (${selectedCbs.length} รายการ)...`;
+        mainBtn.innerHTML = `กำลังรันประมวลผลไฟล์กลุ่มจำนวน (${selectedCbs.length} รายการ)...`;
 
         for (let i = 0; i < selectedCbs.length; i++) {
             const cb = selectedCbs[i];
             const regId = cb.value;
+            // วนลูปยิงคำสั่งสร้างแผ่นกระดาษ PDF ทยอยไปนอนรอใน Google Drive ทีละคน
             const res = await triggerGenSingle(regId);
             if (res) cb.checked = false;
             
             if(i < selectedCbs.length - 1) {
-                await new Promise(resolve => setTimeout(resolve, 1000)); 
+                await new Promise(resolve => setTimeout(resolve, 1200)); 
             }
         }
         
