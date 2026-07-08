@@ -295,15 +295,16 @@
                 if (updateError) throw updateError;
 
                 // 2. ส่งข้อมูลไปสั่ง GAS แอดมิน (ตัวที่ 2) รันพิมพ์สไลด์ บีบทำไฟล์ PDF รอในไดรฟ์ทันที
-                const response = await fetch(CERT_STB_API, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: "checkInSuccess",
-                        id: String(user.id).trim(),
-                        gen_no: String(user.session_info.gen_no).trim(),
-                        course_key: "STB"
-                    })
-                });
+               const response = await fetch(CERT_STB_API, {
+    method: 'POST',
+    body: JSON.stringify({
+        action: "checkInSuccess",
+        id: String(user.id).trim(),
+        gen_no: String(user.session_info.gen_no).trim(),
+        course_key: "STB",
+        session_id: user.session_id ? Number(user.session_id) : null // 🌟 แนบไอดีรอบอบรมพ่วงไปด้วย
+    })
+});
                 const gasRes = await response.json();
                 if(!gasRes.success) throw new Error(gasRes.error || "GAS Engine Error");
 
