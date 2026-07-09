@@ -12,13 +12,6 @@
     @keyframes popIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     th { font-weight: 700 !important; font-size: 0.95rem !important; }
     td { font-size: 1rem !important; }
-    #previewCanvas { 
-      max-w-full; 
-      height: auto; 
-      object-fit: contain; 
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-      border-radius: 0.75rem;
-    }
   </style>
 </head>
 <body class="min-h-screen py-10 px-4">
@@ -60,7 +53,7 @@
       </div>
       <button onclick="triggerGenBatch()" id="btnBatchGen" class="w-full sm:w-auto px-6 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold shadow-md transition-all active:scale-95 flex items-center justify-center gap-2">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-        สั่งคิวรันเจนไฟล์ใบประกาศเก็บลงคลัง (STB)
+        สั่งคิวรันออกใบประกาศพร้อมกัน (STB)
       </button>
     </div>
 
@@ -113,8 +106,8 @@
         </button>
       </div>
       
-      <div class="mt-2 w-full flex justify-center items-center bg-slate-800 border border-slate-700 rounded-xl overflow-hidden relative min-h-[420px] p-2">
-        <div id="loadingText" class="text-center text-slate-400 font-medium absolute inset-0 flex flex-col items-center justify-center bg-slate-800/90 z-10 hidden">
+      <div class="mt-2 w-full flex justify-center items-center bg-slate-50 border border-slate-200 rounded-xl overflow-hidden relative min-h-[380px]">
+        <div id="loadingText" class="text-center text-slate-500 font-medium absolute inset-0 flex flex-col items-center justify-center bg-slate-50/80 z-10 hidden">
           <svg class="animate-spin h-10 w-10 mb-3 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
           กำลังดึงภาพแม่แบบและสลักข้อความด้วย RAM...
         </div>
@@ -127,24 +120,22 @@
 <script src="config.js"></script>
 
 <script>
+    // 🎨 1. ล็อกรูปภาพพื้นหลังพรีวิวเป็น THANAMAOYMUANGHAK.png เรียบร้อยครับ
     const TEMPLATE_IMAGE_URL = "https://knfhgytkfshdmfdieczx.supabase.co/storage/v1/object/public/pic/THANAMAOYMUANGHAK.png"; 
     
-    // 🖋️ 🌟 แผงควบคุมกลางสำหรับปรับขนาดตัวหนังสือ และพิกัดแกน YOffset หน้างานจริง
+    // 🖋️ 2. แผงควบคุมพิกัดและขนาดตัวหนังสือสีดำสนิท (#000000) แยกพารามิเตอร์อิสระให้พี่ปรับแก้ได้ง่ายๆ
     const TEXT_CONFIG = {
-      nameFontSize: 54,       // 🛠️ ปรับเปลี่ยนขนาดตัวหนังสือของ "ชื่อผู้รับ" ตรงนี้
-      nameFontWeight: "bold", // ปรับความหนาตัวหนังสือ ("bold" = ตัวหนา / "normal" = ตัวธรรมดา)
-      nameFontFamily: "'Times New Roman', sans-serif", 
-      nameColor: "#000000",   // เฉดสีดำสนิท
-      nameYOffset: 450,       // 🛠️ ขยับชื่อ ขึ้น-ลง ตรงนี้ (ตัวเลขน้อยลง = เลื่อนขึ้นบน)
+      nameFontSize: 46,       // 🛠️ ปรับเปลี่ยนขนาดตัวหนังสือของ "ชื่อผู้รับ" ตรงนี้ให้ใหญ่ได้ตามต้องการ
+      nameFontWeight: "bold", 
+      nameFontFamily: "'Times New Roman', 'Sarabun', sans-serif", 
+      nameColor: "#000000",   
+      nameYOffset: 430,       // 🛠️ พี่ชัยชนะเลื่อน "ชื่อ" ขึ้น-ลง ตรงนี้ (ตัวเลขน้อยลง = ขยับขึ้นด้านบน)
 
-      dateFontSize: 24,       // 🛠️ ปรับเปลี่ยนขนาดตัวหนังสือของ "วันที่" ตรงนี้
-      dateFontWeight: "italic", // ปรับรูปแบบของวันที่ ("italic" = ตัวเอียง / "bold" = ตัวหนา)
+      dateFontSize: 22,       // 🛠️ ปรับเปลี่ยนขนาดตัวหนังสือของ "วันที่" ตรงนี้
+      dateFontWeight: "italic", 
       dateFontFamily: "'Times New Roman', 'Sarabun', sans-serif", 
-      dateColor: "#000000",   // เฉดสีดำสนิท
-      dateYOffset: 590,       // 🛠️ ขยับวันที่ ขึ้น-ลง ตรงนี้
-
-      align: "center",             
-      xOffset: 561.5        // แกนกึ่งกลางภาพ (1123 / 2)
+      dateColor: "#000000",   
+      dateYOffset: 535        // 🛠️ พี่ชัยชนะเลื่อน "วันที่" ขึ้น-ลง ตรงนี้
     };
 
     let localQueueData = [];
@@ -152,6 +143,7 @@
     let currentSelectedGenNo = "1";
 
     window.addEventListener('DOMContentLoaded', async () => {
+        if (typeof checkAuthGuard === 'function') { await checkAuthGuard(); }
         loadSessions();
         preloadTemplate(); 
     });
@@ -160,6 +152,8 @@
         preloadedTemplateImage = new Image();
         preloadedTemplateImage.crossOrigin = "Anonymous";
         preloadedTemplateImage.src = TEMPLATE_IMAGE_URL; 
+        document.fonts.load(`${TEXT_CONFIG.nameFontWeight} ${TEXT_CONFIG.nameFontSize}px ${TEXT_CONFIG.nameFontFamily}`);
+        document.fonts.load(`${TEXT_CONFIG.dateFontWeight} ${TEXT_CONFIG.dateFontSize}px ${TEXT_CONFIG.dateFontFamily}`);
     }
 
     async function loadSessions() {
@@ -168,7 +162,8 @@
         if (error) return;
         sel.innerHTML = '<option value="">-- เลือกรอบอบรมเพื่อจัดการใบประกาศ --</option>';
         sessions.forEach(s => { 
-            sel.innerHTML += `<option value="${s.id}" data-gen="${s.gen_no}">[รุ่นที่ ${s.gen_no}] ${s.name} (${s.training_date || 'ไม่ระบุวันที่'})</option>`; 
+            let sessionDate = s.training_date || "ไม่ระบุวันที่";
+            sel.innerHTML += `<option value="${s.id}" data-gen="${s.gen_no}">[รุ่นที่ ${s.gen_no}] ${s.name} (${sessionDate})</option>`; 
         });
     }
 
@@ -208,7 +203,7 @@
             let statusBadge = `<span class="px-3 py-1.5 rounded-full text-xs font-bold border block w-full text-center truncate bg-slate-100 text-slate-500 border-slate-200" id="badge_${row.registration_id}">คิวว่าง</span>`;
             if (row.pdf_status === "กำลังเจน") {
                 statusBadge = `<span class="px-3 py-1.5 rounded-full text-xs font-bold border block w-full text-center truncate bg-indigo-100 text-indigo-700 border-indigo-200 animate-pulse" id="badge_${row.registration_id}">กำลังสร้าง...</span>`;
-            } else if (row.pdf_status === "ออกสำเร็จ" || row.pdf_status === "ส่งสำเร็จ" || row.certificate_url) {
+            } else if (row.pdf_status === "ออกสำเร็จ" || row.certificate_url) {
                 statusBadge = `<span class="px-3 py-1.5 rounded-full text-xs font-bold border block w-full text-center truncate bg-green-100 text-green-700 border-green-200 shadow-sm" id="badge_${row.registration_id}">ออกสำเร็จ</span>`;
             }
 
@@ -243,12 +238,12 @@
 
     function calculateEnglishDateFromDropdown() {
         const selectElement = document.getElementById('certSessionSelect');
-        if(!selectElement.value) return "On Jun 1, 2026(Training day )";
+        if(!selectElement.value) return "On June 1, 2026(Training day )";
         const sessionText = selectElement.options[selectElement.selectedIndex].text;
         const matchDate = sessionText.match(/\(([^)]+)\)/);
         let rawDateStr = (matchDate && matchDate[1]) ? matchDate[1] : "";
         
-        if (rawDateStr && (rawDateStr.includes("มกราคม") || rawDateStr.includes("พฤษภาคม") || rawDateStr.includes("กรกฎาคม"))) {
+        if (rawDateStr && (rawDateStr.includes("มกราคม") || rawDateStr.includes("พฤษภาคม") || rawDateStr.includes("กรกฎาคม") || rawDateStr.includes("มิถุนายน"))) {
             const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
             const engMonths = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
             let words = rawDateStr.split(" ");
@@ -260,7 +255,7 @@
             let yearEng = parseInt(yearTh) - 543; 
             return `On ${monthEng} ${day}, ${yearEng}(Training day )`;
         }
-        return "On Jun 1, 2026(Training day )";
+        return "On June 1, 2026(Training day )";
     }
 
     function fetchTextAndPreviewFast(index) {
@@ -287,25 +282,25 @@
         function drawCanvasContent(imgObj) {
             const ctx = canvas.getContext('2d');
             
-            // 🌟 รักษาสัดส่วนความกว้างและความสูงจริงจากธรรมชาติไฟล์รูปภาพแท้ ภาพใบประกาศจึงเต็มแผ่นสมบูรณ์
+            // 🌟 ล็อกขนาดพิกเซลแท้ตาม Resolution ภาพจริง เพื่อความคมชัด 100% ตัวหนังสือไม่แตก
             canvas.width = imgObj.naturalWidth || 1123;
             canvas.height = imgObj.naturalHeight || 794;
             
             ctx.clearRect(0, 0, canvas.width, canvas.height); 
             ctx.drawImage(imgObj, 0, 0, canvas.width, canvas.height); 
 
-            ctx.textAlign = TEXT_CONFIG.align;
             ctx.textBaseline = "middle"; 
 
-            // 1. วาดสลักข้อความ "ชื่อผู้เรียน" (ประกอบแกนข้อมูลตัวแปรตามขนาดที่ Custom ไว้ด้านบนสุด)
+            // 1. 🌟 วาดสลักข้อความ "ชื่อผู้เรียน" โดยบังคับพิกัดแกน X ให้อยู่กึ่งกลางภาพถาวร (canvas.width / 2)
+            ctx.textAlign = "center"; 
             ctx.font = `${TEXT_CONFIG.nameFontWeight} ${TEXT_CONFIG.nameFontSize}px ${TEXT_CONFIG.nameFontFamily}`;
             ctx.fillStyle = TEXT_CONFIG.nameColor;
-            ctx.fillText(fullNameStr, TEXT_CONFIG.xOffset, TEXT_CONFIG.nameYOffset);
+            ctx.fillText(fullNameStr, canvas.width / 2, TEXT_CONFIG.nameYOffset);
 
-            // 2. วาดสลักข้อความ "วันที่อบรมภาษาอังกฤษ"
+            // 2. 🌟 วาดสลักข้อความ "วันที่อบรมภาษาอังกฤษ" บังคับพิกัดแกน X ให้อยู่กึ่งกลางภาพถาวรเช่นกัน
             ctx.font = `${TEXT_CONFIG.dateFontWeight} ${TEXT_CONFIG.dateFontSize}px ${TEXT_CONFIG.dateFontFamily}`;
             ctx.fillStyle = TEXT_CONFIG.dateColor;
-            ctx.fillText(dateStr, TEXT_CONFIG.xOffset, TEXT_CONFIG.dateYOffset);
+            ctx.fillText(dateStr, canvas.width / 2, TEXT_CONFIG.dateYOffset);
 
             loader.classList.add('hidden');
             canvas.classList.remove('hidden');
