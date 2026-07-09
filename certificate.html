@@ -120,22 +120,21 @@
 <script src="config.js"></script>
 
 <script>
-    // 🎨 1. ล็อกรูปภาพพื้นหลังพรีวิวเป็น THANAMAOYMUANGHAK.png เรียบร้อยครับ
     const TEMPLATE_IMAGE_URL = "https://knfhgytkfshdmfdieczx.supabase.co/storage/v1/object/public/pic/THANAMAOYMUANGHAK.png"; 
     
-    // 🖋️ 2. แผงควบคุมพิกัดและขนาดตัวหนังสือสีดำสนิท (#000000) แยกพารามิเตอร์อิสระให้พี่ปรับแก้ได้ง่ายๆ
+    // 🖋️ 🌟 แผงควบคุมพิกัดและขนาดตัวหนังสือสีดำสนิท (#000000) แยกพารามิเตอร์อิสระให้พี่ปรับแก้ได้ง่ายๆ
     const TEXT_CONFIG = {
-      nameFontSize: 120,       // 🛠️ ปรับเปลี่ยนขนาดตัวหนังสือของ "ชื่อผู้รับ" ตรงนี้ให้ใหญ่ได้ตามต้องการ
+      nameFontSize: 36,       // 🛠️ ปรับขนาดตัวหนังสือของ "ชื่อผู้เรียน" ตรงนี้ (คีย์เฉพาะตัวเลข เช่น 36, 40, 46)
       nameFontWeight: "bold", 
-      nameFontFamily: "'Sarabun', sans-serif", 
+      nameFontFamily: "'Times New Roman', 'Sarabun', sans-serif", 
       nameColor: "#000000",   
-      nameYOffset: 960,       // 🛠️ พี่ชัยชนะเลื่อน "ชื่อ" ขึ้น-ลง ตรงนี้ (ตัวเลขน้อยลง = ขยับขึ้นด้านบน)
+      nameYOffset: 390,       // 🛠️ ปรับระยะ ขึ้น-ลง ของ "ชื่อ" ตรงนี้ (ตัวเลขน้อยลง = ขยับขึ้นบน / ตัวเลขมากขึ้น = ขยับลงล่าง)
 
-      dateFontSize: 60,       // 🛠️ ปรับเปลี่ยนขนาดตัวหนังสือของ "วันที่" ตรงนี้
+      dateFontSize: 18,       // 🛠️ ปรับขนาดตัวหนังสือของ "วันที่" ตรงนี้
       dateFontWeight: "italic", 
-      dateFontFamily: "'Sarabun', sans-serif", 
+      dateFontFamily: "'Times New Roman', 'Sarabun', sans-serif", 
       dateColor: "#000000",   
-      dateYOffset: 1000        // 🛠️ พี่ชัยชนะเลื่อน "วันที่" ขึ้น-ลง ตรงนี้
+      dateYOffset: 480        // 🛠️ ปรับระยะ ขึ้น-ลง ของ "วันที่" ตรงนี้
     };
 
     let localQueueData = [];
@@ -282,7 +281,7 @@
         function drawCanvasContent(imgObj) {
             const ctx = canvas.getContext('2d');
             
-            // 🌟 ล็อกขนาดพิกเซลแท้ตาม Resolution ภาพจริง เพื่อความคมชัด 100% ตัวหนังสือไม่แตก
+            // ล็อกขนาดพิกเซลแท้ตาม Resolution ภาพจริง (1123 x 794) เพื่อความคมชัด 100% ตัวหนังสือไม่แตก
             canvas.width = imgObj.naturalWidth || 1123;
             canvas.height = imgObj.naturalHeight || 794;
             
@@ -297,7 +296,7 @@
             ctx.fillStyle = TEXT_CONFIG.nameColor;
             ctx.fillText(fullNameStr, canvas.width / 2, TEXT_CONFIG.nameYOffset);
 
-            // 2. 🌟 วาดสลักข้อความ "วันที่อบรมภาษาอังกฤษ" บังคับพิกัดแกน X ให้อยู่กึ่งกลางภาพถาวรเช่นกัน
+            // 2. 🌟 วาดสลักข้อความ "วันที่อบรมภาษาอังกฤษ" บังคับพิกัดแกน X ให้อยู่กึ่งกลางภาพถาวรเช่นกัน (canvas.width / 2)
             ctx.font = `${TEXT_CONFIG.dateFontWeight} ${TEXT_CONFIG.dateFontSize}px ${TEXT_CONFIG.dateFontFamily}`;
             ctx.fillStyle = TEXT_CONFIG.dateColor;
             ctx.fillText(dateStr, canvas.width / 2, TEXT_CONFIG.dateYOffset);
