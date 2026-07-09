@@ -122,21 +122,19 @@
 <script>
     const TEMPLATE_IMAGE_URL = "https://knfhgytkfshdmfdieczx.supabase.co/storage/v1/object/public/pic/THANAMAOYMUANGHAK.png"; 
     
-    // 🖋️ 🌟 แผงควบคุมพิกัดและขนาดตัวหนังสือสีดำสนิท (#000000) แยกพารามิเตอร์อิสระให้พี่ปรับแก้ได้ง่ายๆ
+    // 🖋️ 🌟 แผงควบคุมระบบเปอร์เซ็นต์ใหม่เพื่อความง่ายที่สุดในการเลื่อนแกน Y หน้างานจริง [ล็อกกึ่งกลางแนวนอน X ถาวร]
     const TEXT_CONFIG = {
-      // 1. ส่วนของชื่อผู้เรียน
-      nameFontSize: 46,       // ขนาดตัวหนังสือของ "ชื่อ"
-      nameFontWeight: "bold", // "bold" = ตัวหนา / "normal" = ตัวธรรมดา
+      nameFontSize: 52,       // 🛠️ ขนาดตัวหนังสือของ "ชื่อ" สามารถปรับเปลี่ยนตัวเลขได้อิสระตามใจชอบ
+      nameFontWeight: "bold", 
       nameFontFamily: "'Times New Roman', 'Sarabun', sans-serif", 
       nameColor: "#000000",   
-      nameYPercent: 60,       // 🛠️ 🌟 [ค่าต่ำสุด 0 - สูงสุด 100] ปรับตำแหน่ง "ชื่อ" เป็นเปอร์เซ็นต์ความสูงภาพ (เช่น 50 คือ 50% อยู่กึ่งกลางดิ่งพอดี)
+      nameYPercent: 55,       // 🛠️ ปรับระยะความสูงเป็นเปอร์เซ็นต์ (ค่าอยู่ระหว่าง 0 - 100) เช่น 55 คืออยู่ที่ความสูง 55% ของภาพ
 
-      // 2. ส่วนของวันที่ภาษาอังกฤษ
-      dateFontSize: 22,       // ขนาดตัวหนังสือของ "วันที่"
-      dateFontWeight: "italic", // "italic" = ตัวเอียง / "bold" = ตัวหนา
+      dateFontSize: 24,       // 🛠️ ขนาดตัวหนังสือของ "วันที่"
+      dateFontWeight: "italic", 
       dateFontFamily: "'Times New Roman', 'Sarabun', sans-serif", 
       dateColor: "#000000",   
-      dateYPercent: 70        // 🛠️ 🌟 [ค่าต่ำสุด 0 - สูงสุด 100] ปรับตำแหน่ง "วันที่" เป็นเปอร์เซ็นต์ความสูงภาพ (เช่น 65 คือ อยู่ที่ความสูง 65% ของแผ่น)
+      dateYPercent: 64        // 🛠️ ปรับระยะความสูงเป็นเปอร์เซ็นต์ (ค่าอยู่ระหว่าง 0 - 100) เช่น 64 คืออยู่ที่ความสูง 64% ของภาพ
     };
 
     let localQueueData = [];
@@ -283,7 +281,7 @@
         function drawCanvasContent(imgObj) {
             const ctx = canvas.getContext('2d');
             
-            // ล็อกขนาดพิกเซลแท้ตาม Resolution ภาพจริง (1123 x 794) เพื่อความคมชัด 100% ตัวหนังสือไม่แตก
+            // ล็อกขนาดพิกเซลแท้ตาม Resolution ภาพจริง เพื่อความคมชัดสูงสุด
             canvas.width = imgObj.naturalWidth || 1123;
             canvas.height = imgObj.naturalHeight || 794;
             
@@ -291,17 +289,21 @@
             ctx.drawImage(imgObj, 0, 0, canvas.width, canvas.height); 
 
             ctx.textBaseline = "middle"; 
+            ctx.textAlign = "center"; // บังคับล็อกพิกัดข้อความให้อยู่จุดกึ่งกลางแนวนอน (แกน X) ถาวร 100%
 
-            // 1. 🌟 วาดสลักข้อความ "ชื่อผู้เรียน" โดยบังคับพิกัดแกน X ให้อยู่กึ่งกลางภาพถาวร (canvas.width / 2)
-            ctx.textAlign = "center"; 
+            // 🌟 3. ระบบจะนำค่าเปอร์เซ็นต์ที่พี่กรอกด้านบนสุดมาคำนวณหาระยะความสูงจริงอัตโนมัติ
+            const computedNameY = (canvas.height * TEXT_CONFIG.nameYPercent) / 100;
+            const computedDateY = (canvas.height * TEXT_CONFIG.dateYPercent) / 100;
+
+            // 1. วาดสลักข้อความ "ชื่อผู้เรียน" สีดำสนิท จัดวางกึ่งกลาง
             ctx.font = `${TEXT_CONFIG.nameFontWeight} ${TEXT_CONFIG.nameFontSize}px ${TEXT_CONFIG.nameFontFamily}`;
             ctx.fillStyle = TEXT_CONFIG.nameColor;
-            ctx.fillText(fullNameStr, canvas.width / 2, TEXT_CONFIG.nameYOffset);
+            ctx.fillText(fullNameStr, canvas.width / 2, computedNameY);
 
-            // 2. 🌟 วาดสลักข้อความ "วันที่อบรมภาษาอังกฤษ" บังคับพิกัดแกน X ให้อยู่กึ่งกลางภาพถาวรเช่นกัน (canvas.width / 2)
+            // 2. วาดสลักข้อความ "วันที่อบรมภาษาอังกฤษ" สีดำสนิท จัดวางกึ่งกลาง
             ctx.font = `${TEXT_CONFIG.dateFontWeight} ${TEXT_CONFIG.dateFontSize}px ${TEXT_CONFIG.dateFontFamily}`;
             ctx.fillStyle = TEXT_CONFIG.dateColor;
-            ctx.fillText(dateStr, canvas.width / 2, TEXT_CONFIG.dateYOffset);
+            ctx.fillText(dateStr, canvas.width / 2, computedDateY);
 
             loader.classList.add('hidden');
             canvas.classList.remove('hidden');
