@@ -12,6 +12,13 @@
     @keyframes popIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     th { font-weight: 700 !important; font-size: 0.95rem !important; }
     td { font-size: 1rem !important; }
+    #previewCanvas { 
+      max-w-full; 
+      height: auto; 
+      object-fit: contain; 
+      box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+      border-radius: 0.75rem;
+    }
   </style>
 </head>
 <body class="min-h-screen py-10 px-4">
@@ -96,7 +103,7 @@
   </div>
 
   <div id="previewModal" class="fixed inset-0 bg-slate-900/60 h-full w-full hidden z-50 flex items-center justify-center backdrop-blur-sm transition-opacity p-4">
-    <div class="relative p-6 border w-full max-w-4xl shadow-2xl rounded-3xl bg-white animate-pop">
+    <div class="relative p-6 border w-full max-w-3xl shadow-2xl rounded-3xl bg-white animate-pop">
       <div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-100">
         <div>
           <h3 class="text-2xl font-extrabold text-slate-800">ตัวอย่างสัดส่วนจัดวางข้อมูลภาพก่อนออกจริง (STB)</h3>
@@ -106,12 +113,12 @@
         </button>
       </div>
       
-      <div class="mt-2 w-full flex justify-center items-center bg-slate-50 border border-slate-200 rounded-xl overflow-hidden relative min-h-[380px]">
+      <div class="mt-2 w-full flex justify-center items-center bg-slate-50 border border-slate-200 rounded-xl overflow-hidden relative min-h-[380px] p-1.5">
         <div id="loadingText" class="text-center text-slate-500 font-medium absolute inset-0 flex flex-col items-center justify-center bg-slate-50/80 z-10 hidden">
           <svg class="animate-spin h-10 w-10 mb-3 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
           กำลังดึงภาพแม่แบบและสลักข้อความด้วย RAM...
         </div>
-        <canvas id="previewCanvas" class="max-w-full h-auto object-contain shadow-inner rounded-xl hidden"></canvas>
+        <canvas id="previewCanvas" width="800" height="600" class="shadow-inner rounded-xl hidden"></canvas>
       </div>
     </div>
   </div>
@@ -122,19 +129,16 @@
 <script>
     const TEMPLATE_IMAGE_URL = "https://knfhgytkfshdmfdieczx.supabase.co/storage/v1/object/public/pic/THANAMAOYMUANGHAK.png"; 
     
-    // 🖋️ 🌟 แผงควบคุมระบบเปอร์เซ็นต์ใหม่เพื่อความง่ายที่สุดในการเลื่อนแกน Y หน้างานจริง [ล็อกกึ่งกลางแนวนอน X ถาวร]
+    // 🖋️ 🌟 แผงควบคุมพิกัดของชื่อและวันที่ ตัวหนังสือสีดำสนิท จัดกึ่งกลางอัตโนมัติบนแกน X (xOffset: 400)
     const TEXT_CONFIG = {
-      nameFontSize: 52,       // 🛠️ ขนาดตัวหนังสือของ "ชื่อ" สามารถปรับเปลี่ยนตัวเลขได้อิสระตามใจชอบ
-      nameFontWeight: "bold", 
-      nameFontFamily: "'Times New Roman', 'Sarabun', sans-serif", 
-      nameColor: "#000000",   
-      nameYPercent: 55,       // 🛠️ ปรับระยะความสูงเป็นเปอร์เซ็นต์ (ค่าอยู่ระหว่าง 0 - 100) เช่น 55 คืออยู่ที่ความสูง 55% ของภาพ
-
-      dateFontSize: 24,       // 🛠️ ขนาดตัวหนังสือของ "วันที่"
-      dateFontWeight: "italic", 
-      dateFontFamily: "'Times New Roman', 'Sarabun', sans-serif", 
-      dateColor: "#000000",   
-      dateYPercent: 64        // 🛠️ ปรับระยะความสูงเป็นเปอร์เซ็นต์ (ค่าอยู่ระหว่าง 0 - 100) เช่น 64 คืออยู่ที่ความสูง 64% ของภาพ
+      nameFont: "bold 28px 'Franklin Gothic Medium', 'Franklin Gothic', 'Libre Franklin', sans-serif", 
+      nameColor: "#000000", // ปรับเป็นเฉดดำสนิทถาวรตามสั่ง            
+      nameYOffset: 295,     // 🛠️ พี่ชัยชนะเลื่อนระยะ "ชื่อ" ขึ้น-ลงตรงนี้ได้เลย (ค่าน้อยลง = ขยับขึ้นบน)
+      dateFont: "16px 'Libre Franklin', sans-serif", 
+      dateColor: "#000000", // ปรับเป็นเฉดดำสนิทถาวรตามสั่ง
+      dateYOffset: 380,     // 🛠️ พี่ชัยชนะเลื่อนระยะ "วันที่" ขึ้น-ลงตรงนี้ได้เลย
+      align: "center",             
+      xOffset: 400          // ล็อกจุดกึ่งกลางแนวนอนของสเกลความกว้าง 800 พิกเซล
     };
 
     let localQueueData = [];
@@ -151,8 +155,8 @@
         preloadedTemplateImage = new Image();
         preloadedTemplateImage.crossOrigin = "Anonymous";
         preloadedTemplateImage.src = TEMPLATE_IMAGE_URL; 
-        document.fonts.load(`${TEXT_CONFIG.nameFontWeight} ${TEXT_CONFIG.nameFontSize}px ${TEXT_CONFIG.nameFontFamily}`);
-        document.fonts.load(`${TEXT_CONFIG.dateFontWeight} ${TEXT_CONFIG.dateFontSize}px ${TEXT_CONFIG.dateFontFamily}`);
+        document.fonts.load(TEXT_CONFIG.nameFont);
+        document.fonts.load(TEXT_CONFIG.dateFont);
     }
 
     async function loadSessions() {
@@ -237,7 +241,7 @@
 
     function calculateEnglishDateFromDropdown() {
         const selectElement = document.getElementById('certSessionSelect');
-        if(!selectElement.value) return "On June 1, 2026(Training day )";
+        if(!selectElement.value) return "On June 1, 2026 (Training day )";
         const sessionText = selectElement.options[selectElement.selectedIndex].text;
         const matchDate = sessionText.match(/\(([^)]+)\)/);
         let rawDateStr = (matchDate && matchDate[1]) ? matchDate[1] : "";
@@ -252,9 +256,9 @@
             let monthIdx = thaiMonths.indexOf(monthTh);
             let monthEng = monthIdx !== -1 ? engMonths[monthIdx] : "June";
             let yearEng = parseInt(yearTh) - 543; 
-            return `On ${monthEng} ${day}, ${yearEng}(Training day )`;
+            return `On ${monthEng} ${day}, ${yearEng} (Training day )`;
         }
-        return "On June 1, 2026(Training day )";
+        return "On June 1, 2026 (Training day )";
     }
 
     function fetchTextAndPreviewFast(index) {
@@ -274,36 +278,29 @@
         let dateStr = row.training_date;
         if(!dateStr || dateStr === "NULL" || dateStr === "null") {
             dateStr = calculateEnglishDateFromDropdown();
-        } else if(!dateStr.startsWith("On")) {
+        } else if(!dateStr.startsWith("On") && !dateStr.startsWith("27/05")) {
             dateStr = `On ${dateStr}`;
         }
 
         function drawCanvasContent(imgObj) {
+            canvas.width = 800;
+            canvas.height = 600;
             const ctx = canvas.getContext('2d');
-            
-            // ล็อกขนาดพิกเซลแท้ตาม Resolution ภาพจริง เพื่อความคมชัดสูงสุด
-            canvas.width = imgObj.naturalWidth || 1123;
-            canvas.height = imgObj.naturalHeight || 794;
-            
             ctx.clearRect(0, 0, canvas.width, canvas.height); 
-            ctx.drawImage(imgObj, 0, 0, canvas.width, canvas.height); 
+            ctx.drawImage(imgObj, 0, 0, 800, 600); 
 
+            ctx.textAlign = TEXT_CONFIG.align;
             ctx.textBaseline = "middle"; 
-            ctx.textAlign = "center"; // บังคับล็อกพิกัดข้อความให้อยู่จุดกึ่งกลางแนวนอน (แกน X) ถาวร 100%
 
-            // 🌟 3. ระบบจะนำค่าเปอร์เซ็นต์ที่พี่กรอกด้านบนสุดมาคำนวณหาระยะความสูงจริงอัตโนมัติ
-            const computedNameY = (canvas.height * TEXT_CONFIG.nameYPercent) / 100;
-            const computedDateY = (canvas.height * TEXT_CONFIG.dateYPercent) / 100;
-
-            // 1. วาดสลักข้อความ "ชื่อผู้เรียน" สีดำสนิท จัดวางกึ่งกลาง
-            ctx.font = `${TEXT_CONFIG.nameFontWeight} ${TEXT_CONFIG.nameFontSize}px ${TEXT_CONFIG.nameFontFamily}`;
+            // 1. สลักชื่อภาษาอังกฤษตัวพิมพ์ใหญ่ ตรงพิกัด 800x600 สากล
+            ctx.font = TEXT_CONFIG.nameFont;
             ctx.fillStyle = TEXT_CONFIG.nameColor;
-            ctx.fillText(fullNameStr, canvas.width / 2, computedNameY);
+            ctx.fillText(fullNameStr, TEXT_CONFIG.xOffset, TEXT_CONFIG.nameYOffset);
 
-            // 2. วาดสลักข้อความ "วันที่อบรมภาษาอังกฤษ" สีดำสนิท จัดวางกึ่งกลาง
-            ctx.font = `${TEXT_CONFIG.dateFontWeight} ${TEXT_CONFIG.dateFontSize}px ${TEXT_CONFIG.dateFontFamily}`;
+            // 2. สลักวันที่ฟอร์แมตภาษาอังกฤษตรงพิกัดตามสเปก
+            ctx.font = TEXT_CONFIG.dateFont;
             ctx.fillStyle = TEXT_CONFIG.dateColor;
-            ctx.fillText(dateStr, canvas.width / 2, computedDateY);
+            ctx.fillText(dateStr, TEXT_CONFIG.xOffset, TEXT_CONFIG.dateYOffset);
 
             loader.classList.add('hidden');
             canvas.classList.remove('hidden');
@@ -349,6 +346,7 @@
         document.getElementById('previewModal').classList.add('hidden'); 
     }
 
+    // 🌟 🛠️ ฟังก์ชันยิงคำสั่งสร้างไฟล์บันทึกแยกเก็บลงไดรฟ์รุ่นนิ่ง ๆ โดยตัดขาดการยิงอีเมลเรียบร้อย
     async function triggerGenSingle(regId) {
         const btn = document.getElementById(`btn_gen_${regId}`);
         const badge = document.getElementById(`badge_${regId}`);
@@ -372,6 +370,7 @@
             const result = await response.json();
             
             if (result.success) {
+                // ปรับปรุงคลังประวัติไฟล์บนระบบ Supabase เป็น ออกสำเร็จ
                 await supabaseClient.from('certificates_queue').update({ 
                     pdf_status: 'ออกสำเร็จ', 
                     certificate_url: result.pdfUrl, 
