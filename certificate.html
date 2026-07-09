@@ -12,12 +12,13 @@
     @keyframes popIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     th { font-weight: 700 !important; font-size: 0.95rem !important; }
     td { font-size: 1rem !important; }
+    
+    /* 🌟 ไฮไลต์แก้ไขบั๊ก: ล็อกระนาบมิติตัวแคนวาสให้ขยายและยืดหยุ่นเต็มกรอบ POPUP โดยไม่โดนบีบขอบ */
     #previewCanvas { 
-      max-w-full; 
-      height: auto; 
-      object-fit: contain; 
-      box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
-      border-radius: 0.75rem;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 0.5rem;
     }
   </style>
 </head>
@@ -113,12 +114,12 @@
         </button>
       </div>
       
-      <div class="mt-2 w-full flex justify-center items-center bg-slate-50 border border-slate-200 rounded-xl overflow-hidden relative min-h-[380px] p-1.5">
+      <div class="mt-2 w-full aspect-[4/3] bg-slate-100 border border-slate-200 rounded-xl overflow-hidden relative p-1">
         <div id="loadingText" class="text-center text-slate-500 font-medium absolute inset-0 flex flex-col items-center justify-center bg-slate-50/80 z-10 hidden">
           <svg class="animate-spin h-10 w-10 mb-3 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
           กำลังดึงภาพแม่แบบและสลักข้อความด้วย RAM...
         </div>
-        <canvas id="previewCanvas" width="800" height="600" class="hidden"></canvas>
+        <canvas id="previewCanvas"></canvas>
       </div>
     </div>
   </div>
@@ -129,16 +130,16 @@
 <script>
     const TEMPLATE_IMAGE_URL = "https://knfhgytkfshdmfdieczx.supabase.co/storage/v1/object/public/pic/THANAMAOYMUANGHAK.png"; 
     
-    // 🖋️ แผงควบคุมพิกัดของชื่อและวันที่ ตัวหนังสือสีดำสนิท จัดกึ่งกลางอัตโนมัติบนแกน X
+    // 🖋️ แผงควบคุมพิกัดของชื่อและวันที่ ตัวหนังสือสีดำสนิท จัดกึ่งกลางอัตโนมัติบนแกน X (xOffset: 400)
     const TEXT_CONFIG = {
       nameFont: "bold 28px 'Franklin Gothic Medium', 'Franklin Gothic', 'Libre Franklin', sans-serif", 
       nameColor: "#000000",            
-      nameYOffset: 295,     // 🛠️ พี่ชัยชนะเลื่อนระยะ "ชื่อ" ขึ้น-ลงตรงนี้ได้เลย (ค่าน้อยลง = ขยับขึ้นบน)
+      nameYOffset: 295,     // 🛠️ พี่ชัยชนะปรับแกน Y เลื่อน ชื่อ ขึ้น-ลง ได้ตามใจชอบตรงนี้ครับ
       dateFont: "16px 'Libre Franklin', sans-serif", 
       dateColor: "#000000", 
-      dateYOffset: 380,     // 🛠️ พี่ชัยชนะเลื่อนระยะ "วันที่" ขึ้น-ลงตรงนี้ได้เลย
+      dateYOffset: 380,     // 🛠️ พี่ชัยชนะปรับแกน Y เลื่อน วันที่ ขึ้น-ลง ได้ตามใจชอบตรงนี้ครับ
       align: "center",             
-      xOffset: 400          // ล็อกจุดกึ่งกลางแนวนอนของสเกลความกว้าง 800 พิกเซล
+      xOffset: 400          
     };
 
     let localQueueData = [];
@@ -283,21 +284,23 @@
         }
 
         function drawCanvasContent(imgObj) {
-            canvas.width = 1100;
-            canvas.height = 800;
+            // บังคับกางแกนโครงสร้าง Canvas พิกเซลจริงให้เท่ากับความละเอียดไฟล์รูปภาพเพื่อความคมชัด 100%
+            canvas.width = imgObj.naturalWidth || 800;
+            canvas.height = imgObj.naturalHeight || 600;
+            
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height); 
-            ctx.drawImage(imgObj, 0, 0, 800, 600); 
+            ctx.drawImage(imgObj, 0, 0, canvas.width, canvas.height); 
 
             ctx.textAlign = TEXT_CONFIG.align;
             ctx.textBaseline = "middle"; 
 
-            // 1. สลักชื่อภาษาอังกฤษตัวพิมพ์ใหญ่
+            // 1. สลักชื่อภาษาอังกฤษตัวพิมพ์ใหญ่ สีดำสนิท
             ctx.font = TEXT_CONFIG.nameFont;
             ctx.fillStyle = TEXT_CONFIG.nameColor;
             ctx.fillText(fullNameStr, TEXT_CONFIG.xOffset, TEXT_CONFIG.nameYOffset);
 
-            // 2. สลักวันที่ฟอร์แมตภาษาอังกฤษ
+            // 2. สลักวันที่ฟอร์แมตภาษาอังกฤษ สีดำสนิท
             ctx.font = TEXT_CONFIG.dateFont;
             ctx.fillStyle = TEXT_CONFIG.dateColor;
             ctx.fillText(dateStr, TEXT_CONFIG.xOffset, TEXT_CONFIG.dateYOffset);
