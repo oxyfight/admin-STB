@@ -120,19 +120,18 @@
 <script src="config.js"></script>
 
 <script>
-    // 🌟 ดึงลิงก์ภาพแม่แบบใบประกาศพรีวิวตัวเต็มตามจุดประสงค์ของพี่ชัยชนะ
-    const TEMPLATE_IMAGE_URL = "https://ghgmupyrkeakyolliogv.supabase.co/storage/v1/object/public/rjrh-trainning's%20Org/Ins.Chaichana.png"; 
+    // 🎨 1. เปลี่ยนพาธลิงก์รูปภาพแม่แบบใบเซอร์ต้นฉบับพรีเมียมตามสั่งเรียบร้อยครับ
+    const TEMPLATE_IMAGE_URL = "https://knfhgytkfshdmfdieczx.supabase.co/storage/v1/object/public/pic/THANAMAOYMUANGHAK.png"; 
     
-    // 🖋️ ตัวแปรสับสีตัวอักษรเป็นสีดำสนิท (#000000) และล็อกพิกตําแหน่งชื่อ-วันที่ ให้ตรงแกนแม่แบบเป๊ะๆ
+    // 🖋️ 2. ปรับขนาดอักษรสีดำสนิท (#000000) ขยายตัวใหญ่ และเตรียมพิกัดแกน Y ไว้ให้ขยับเองได้ง่ายๆ
     const TEXT_CONFIG = {
-      nameFont: "bold 28px 'Franklin Gothic Medium', 'Franklin Gothic', 'Libre Franklin', sans-serif", 
+      nameFont: "bold 42px 'Franklin Gothic Medium', 'Franklin Gothic', 'Libre Franklin', sans-serif", 
       nameColor: "#000000",             
-      nameYOffset: 295,      // 🛠️ ปรับตัวเลขนี้เพื่อเลื่อนระยะ "ชื่อ" ขึ้น-ลง (ค่าน้อยลง = ขยับขึ้น)
-      dateFont: "16px 'Libre Franklin', sans-serif", 
+      nameYOffset: 550,     // 🛠️ พี่ชัยชนะเลื่อนระยะ "ชื่อผู้รับ" ขึ้น-ลงตรงนี้ (ตัวเลขน้อยลง = เลื่อนขึ้นด้านบน)
+      dateFont: "bold 24px 'Libre Franklin', sans-serif", 
       dateColor: "#000000", 
-      dateYOffset: 380,      // 🛠️ ปรับตัวเลขนี้เพื่อเลื่อนระยะ "วันที่" ขึ้น-ลง
-      align: "center",             
-      xOffset: 400          
+      dateYOffset: 650,     // 🛠️ พี่ชัยชนะเลื่อนระยะ "วันที่ภาษาอังกฤษ" ขึ้น-ลงตรงนี้
+      align: "center"        
     };
 
     let localQueueData = [];
@@ -208,6 +207,12 @@
                 ? `<a href="${row.certificate_url}" target="_blank" class="px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 hover:text-slate-800 rounded-xl text-xs font-bold border border-slate-200 active:scale-95 transition-all flex items-center gap-1" id="btn_view_${row.registration_id}">เปิดไฟล์</a>` 
                 : '';
 
+            // 🌟 ระบบสับเปลี่ยนการคำนวณและดึงข้อความวันที่พรีวิวอัตโนมัติล่วงหน้าเพื่อโชว์บนหน้าตาราง
+            let tableDateText = row.training_date;
+            if(!tableDateText || tableDateText === "NULL" || tableDateText === "null") {
+                tableDateText = calculateEnglishDateFromDropdown();
+            }
+
             tbody.innerHTML += `
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td class="p-6 text-center">
@@ -215,7 +220,7 @@
                     </td>
                     <td class="p-6 font-bold text-slate-400 text-center">${index + 1}</td>
                     <td class="p-6 font-extrabold text-slate-800">${row.full_name_en}</td>
-                    <td class="p-6 text-center font-medium text-slate-500">${row.training_date || 'รอรันช่วงเย็น'}</td>
+                    <td class="p-6 text-center font-medium text-slate-500">${tableDateText}</td>
                     <td class="p-6 text-center">${statusBadge}</td>
                     <td class="p-6 text-center">
                         <div class="flex flex-wrap justify-center items-center gap-1.5">
@@ -228,6 +233,30 @@
         });
     }
 
+    // ฟังก์ชันช่วยประมวลผลดึงวันที่จัดงานภาษาไทยจาก Dropdown มาผันเป็นฟอร์แมตภาษาอังกฤษสากลป้องกันตารางว่างเปล่า
+    function calculateEnglishDateFromDropdown() {
+        const selectElement = document.getElementById('certSessionSelect');
+        if(!selectElement.value) return "On Jun 1, 2026(Training day )";
+        const sessionText = selectElement.options[selectElement.selectedIndex].text;
+        const matchDate = sessionText.match(/\(([^)]+)\)/);
+        let rawDateStr = (matchDate && matchDate[1]) ? matchDate[1] : "";
+        
+        if (rawDateStr && (rawDateStr.includes("มกราคม") || rawDateStr.includes("พฤษภาคม") || rawDateStr.includes("กรกฎาคม"))) {
+            const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+            const engMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            let words = rawDateStr.split(" ");
+            let day = words[0] || "1";
+            let monthTh = words[1] || "";
+            let yearTh = words[2] || "2569";
+            let monthIdx = thaiMonths.indexOf(monthTh);
+            let monthEng = monthIdx !== -1 ? engMonths[monthIdx] : "Jun";
+            let yearEng = parseInt(yearTh) - 543; 
+            return `On ${monthEng} ${day}, ${yearEng}(Training day )`;
+        }
+        return "On Jun 1, 2026(Training day )";
+    }
+
+    // ฟังก์ชันวาดผ้าใบ Canvas พรีวิวอัจฉริยะ แบบสืบทอดขนาดธรรมชาติรูปภาพแท้คมชัด 100%
     function fetchTextAndPreviewFast(index) {
         const row = localQueueData[index];
         if (!row) return;
@@ -241,14 +270,21 @@
         modal.classList.remove('hidden'); 
 
         let fullNameStr = (row.full_name_en || "ไม่ระบุชื่อ").toUpperCase();
-        let dateStr = row.training_date || "On Jun 1, 2026(Training day )"; 
+        
+        // 🌟 ลอกลอจิกคัดกรองแปลงผันฟอร์แมตวันที่จากไทยเป็นอังกฤษ On Month Day, 2026(Training day ) เป๊ะๆ
+        let dateStr = row.training_date;
+        if(!dateStr || dateStr === "NULL" || dateStr === "null") {
+            dateStr = calculateEnglishDateFromDropdown();
+        } else if(!dateStr.startsWith("On")) {
+            dateStr = `On ${dateStr}`;
+        }
 
         function drawCanvasContent(imgObj) {
             const ctx = canvas.getContext('2d');
             
-            // 🌟 เทคนิคการสืบทอดขนาดแท้แบบ Real-time เพื่อพรีวิวแบบคมชัด 100% ไม่บิดเบี้ยว
-            canvas.width = imgObj.naturalWidth || 800;
-            canvas.height = imgObj.naturalHeight || 600;
+            // 🌟 ไม้ตายสำคัญ: สืบทอดความกว้าง/ความสูงแท้จริงตามไฟล์ต้นฉบับรูปพรีเมียม สัดส่วนอักษรจึงไม่ผิดเพี้ยน
+            canvas.width = imgObj.naturalWidth || 1123;
+            canvas.height = imgObj.naturalHeight || 794;
             
             ctx.clearRect(0, 0, canvas.width, canvas.height); 
             ctx.drawImage(imgObj, 0, 0, canvas.width, canvas.height); 
@@ -256,15 +292,15 @@
             ctx.textAlign = TEXT_CONFIG.align;
             ctx.textBaseline = "middle"; 
 
-            // 1. วาดชื่ออังกฤษตัวพิมพ์หนาสีดำสนิท
+            // 1. วาดสลักข้อความ "ชื่อผู้รับวุฒิบัตร" สีดำสนิท ไว้กึ่งกลางแผ่นตรงพิกัด YOffset
             ctx.font = TEXT_CONFIG.nameFont;
             ctx.fillStyle = TEXT_CONFIG.nameColor;
-            ctx.fillText(fullNameStr, TEXT_CONFIG.xOffset, TEXT_CONFIG.nameYOffset);
+            ctx.fillText(fullNameStr, canvas.width / 2, TEXT_CONFIG.nameYOffset);
 
-            // 2. วาดวันที่ฟอร์แมตภาษาอังกฤษสีดำสนิท
+            // 2. วาดสลักข้อความ "วันที่ประมวลผลอังกฤษ" สีดำสนิท ไว้กึ่งกลางแผ่นตรงพิกัด YOffset
             ctx.font = TEXT_CONFIG.dateFont;
             ctx.fillStyle = TEXT_CONFIG.dateColor;
-            ctx.fillText(dateStr, TEXT_CONFIG.xOffset, TEXT_CONFIG.dateYOffset);
+            ctx.fillText(dateStr, canvas.width / 2, TEXT_CONFIG.dateYOffset);
 
             loader.classList.add('hidden');
             canvas.classList.remove('hidden');
@@ -310,7 +346,7 @@
         document.getElementById('previewModal').classList.add('hidden'); 
     }
 
-    // 🌟 ปรับปรุงการกด GEN รายบุคคล: ให้สร้างไฟล์เอกสารไปฝังนิ่งในไดรฟ์อย่างเดียว ไม่ส่งเมล
+    // 🌟 ฟังก์ชันคุมปุ่มปฏิบัติการ GEN: สร้างไฟล์สไลด์บีบ PDF ลงไดรฟ์รุ่นอย่างเดียว (ไม่ส่งเมลเด็ดขาดตามบรีฟชั่วโมงเรียน)
     async function triggerGenSingle(regId) {
         const btn = document.getElementById(`btn_gen_${regId}`);
         const badge = document.getElementById(`badge_${regId}`);
@@ -322,11 +358,10 @@
         }
 
         try {
-            // ยิงไปสั่งให้ GAS หลังบ้านก๊อปปี้เทมเพลตและพิมพ์ PDF ไปนอนรอนิ่งๆ ในโฟลเดอร์รุ่น
             const response = await fetch(CERT_STB_API, {
                 method: 'POST',
                 body: JSON.stringify({ 
-                    action: "generatePdfOnlyNoEmail", 
+                    action: "generatePdfOnlyNoEmail", // วิ่งเข้าหาเร้าเตอร์ตัวสร้างไฟล์เพียวฝั่ง GAS แอดมิน
                     id: String(regId).trim(), 
                     gen_no: String(currentSelectedGenNo).trim(), 
                     course_key: "STB" 
@@ -335,7 +370,7 @@
             const result = await response.json();
             
             if (result.success) {
-                // อัปเดตตารางคิวงานบน Supabase ให้เป็น 'ออกสำเร็จ' เพื่อเก็บลิงก์คลัง
+                // อัปเดตตารางกลับไปพักเก็บข้อมูลบน Supabase ให้เปลี่ยนจาก คิวว่าง กลายเป็น ออกสำเร็จ
                 await supabaseClient.from('certificates_queue').update({ 
                     pdf_status: 'ออกสำเร็จ', 
                     certificate_url: result.pdfUrl, 
