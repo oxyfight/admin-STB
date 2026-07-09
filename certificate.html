@@ -118,7 +118,7 @@
           <svg class="animate-spin h-10 w-10 mb-3 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
           กำลังดึงภาพแม่แบบและสลักข้อความด้วย RAM...
         </div>
-        <canvas id="previewCanvas" width="800" height="600" class="shadow-inner rounded-xl hidden"></canvas>
+        <canvas id="previewCanvas" width="800" height="600" class="hidden"></canvas>
       </div>
     </div>
   </div>
@@ -129,13 +129,13 @@
 <script>
     const TEMPLATE_IMAGE_URL = "https://knfhgytkfshdmfdieczx.supabase.co/storage/v1/object/public/pic/THANAMAOYMUANGHAK.png"; 
     
-    // 🖋️ 🌟 แผงควบคุมพิกัดของชื่อและวันที่ ตัวหนังสือสีดำสนิท จัดกึ่งกลางอัตโนมัติบนแกน X (xOffset: 400)
+    // 🖋️ แผงควบคุมพิกัดของชื่อและวันที่ ตัวหนังสือสีดำสนิท จัดกึ่งกลางอัตโนมัติบนแกน X
     const TEXT_CONFIG = {
       nameFont: "bold 28px 'Franklin Gothic Medium', 'Franklin Gothic', 'Libre Franklin', sans-serif", 
-      nameColor: "#000000", // ปรับเป็นเฉดดำสนิทถาวรตามสั่ง            
+      nameColor: "#000000",            
       nameYOffset: 295,     // 🛠️ พี่ชัยชนะเลื่อนระยะ "ชื่อ" ขึ้น-ลงตรงนี้ได้เลย (ค่าน้อยลง = ขยับขึ้นบน)
       dateFont: "16px 'Libre Franklin', sans-serif", 
-      dateColor: "#000000", // ปรับเป็นเฉดดำสนิทถาวรตามสั่ง
+      dateColor: "#000000", 
       dateYOffset: 380,     // 🛠️ พี่ชัยชนะเลื่อนระยะ "วันที่" ขึ้น-ลงตรงนี้ได้เลย
       align: "center",             
       xOffset: 400          // ล็อกจุดกึ่งกลางแนวนอนของสเกลความกว้าง 800 พิกเซล
@@ -292,12 +292,12 @@
             ctx.textAlign = TEXT_CONFIG.align;
             ctx.textBaseline = "middle"; 
 
-            // 1. สลักชื่อภาษาอังกฤษตัวพิมพ์ใหญ่ ตรงพิกัด 800x600 สากล
+            // 1. สลักชื่อภาษาอังกฤษตัวพิมพ์ใหญ่
             ctx.font = TEXT_CONFIG.nameFont;
             ctx.fillStyle = TEXT_CONFIG.nameColor;
             ctx.fillText(fullNameStr, TEXT_CONFIG.xOffset, TEXT_CONFIG.nameYOffset);
 
-            // 2. สลักวันที่ฟอร์แมตภาษาอังกฤษตรงพิกัดตามสเปก
+            // 2. สลักวันที่ฟอร์แมตภาษาอังกฤษ
             ctx.font = TEXT_CONFIG.dateFont;
             ctx.fillStyle = TEXT_CONFIG.dateColor;
             ctx.fillText(dateStr, TEXT_CONFIG.xOffset, TEXT_CONFIG.dateYOffset);
@@ -336,9 +336,9 @@
         const bar = document.getElementById('batch-action-bar');
         if (checkedCount > 0) {
             document.getElementById('selected-count-text').innerText = checkedCount;
-            bar.classList.remove('hidden');
+            bar.className = "fixed bottom-5 left-1/2 -translate-x-1/2 z-[100] bg-indigo-50 border border-indigo-100 rounded-[2rem] p-6 flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xl max-w-4xl w-[90%]";
         } else {
-            bar.classList.add('hidden');
+            bar.className = "hidden";
         }
     }
 
@@ -346,7 +346,6 @@
         document.getElementById('previewModal').classList.add('hidden'); 
     }
 
-    // 🌟 🛠️ ฟังก์ชันยิงคำสั่งสร้างไฟล์บันทึกแยกเก็บลงไดรฟ์รุ่นนิ่ง ๆ โดยตัดขาดการยิงอีเมลเรียบร้อย
     async function triggerGenSingle(regId) {
         const btn = document.getElementById(`btn_gen_${regId}`);
         const badge = document.getElementById(`badge_${regId}`);
@@ -370,7 +369,6 @@
             const result = await response.json();
             
             if (result.success) {
-                // ปรับปรุงคลังประวัติไฟล์บนระบบ Supabase เป็น ออกสำเร็จ
                 await supabaseClient.from('certificates_queue').update({ 
                     pdf_status: 'ออกสำเร็จ', 
                     certificate_url: result.pdfUrl, 
