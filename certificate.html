@@ -12,8 +12,6 @@
     @keyframes popIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     th { font-weight: 700 !important; font-size: 0.95rem !important; }
     td { font-size: 1rem !important; }
-    
-    /* 🌟 ไฮไลต์แก้ไขบั๊ก: ล็อกระนาบมิติตัวแคนวาสให้ขยายและยืดหยุ่นเต็มกรอบ POPUP โดยไม่โดนบีบขอบ */
     #previewCanvas { 
       width: 100%;
       height: 100%;
@@ -130,16 +128,21 @@
 <script>
     const TEMPLATE_IMAGE_URL = "https://knfhgytkfshdmfdieczx.supabase.co/storage/v1/object/public/pic/THANAMAOYMUANGHAK.png"; 
     
-    // 🖋️ แผงควบคุมพิกัดของชื่อและวันที่ ตัวหนังสือสีดำสนิท จัดกึ่งกลางอัตโนมัติบนแกน X (xOffset: 400)
+    // 🖋️ 🌟 แผงควบคุมระบบเปอร์เซ็นต์ใหม่ (แกน X ล็อกกึ่งกลางถาวร พี่ชัยชนะปรับแค่ขนาดฟอนต์ และแกน Y เป็นเปอร์เซ็นต์พอครับ)
     const TEXT_CONFIG = {
-      nameFont: "bold 28px 'Franklin Gothic Medium', 'Franklin Gothic', 'Libre Franklin', sans-serif", 
-      nameColor: "#000000",            
-      nameYOffset: 295,     // 🛠️ พี่ชัยชนะปรับแกน Y เลื่อน ชื่อ ขึ้น-ลง ได้ตามใจชอบตรงนี้ครับ
-      dateFont: "16px 'Libre Franklin', sans-serif", 
-      dateColor: "#000000", 
-      dateYOffset: 380,     // 🛠️ พี่ชัยชนะปรับแกน Y เลื่อน วันที่ ขึ้น-ลง ได้ตามใจชอบตรงนี้ครับ
-      align: "center",             
-      xOffset: 400          
+      // 1. ส่วนตั้งค่าของ "ชื่อผู้เรียน"
+      nameFontSize: 95,       // 🛠️ ขนาดตัวหนังสือของชื่อผู้เรียน (ชอบใหญ่แค่ไหนเพิ่มตัวเลขได้เลยครับ)
+      nameFontWeight: "bold", 
+      nameFontFamily: "'Times New Roman', 'Sarabun', sans-serif", 
+      nameColor: "#000000",   
+      nameYPercent: 65,       // 🛠️ ปรับระยะขึ้น-ลงเป็นเปอร์เซ็นต์ความสูง (ค่า 0 ถึง 100) เช่น 55 คืออยู่ที่ความสูง 55% ของภาพ
+
+      // 2. ส่วนตั้งค่าของ "วันที่อบรมอังกฤษ"
+      dateFontSize: 45,       // 🛠️ ขนาดตัวหนังสือของวันที่
+      dateFontWeight: "italic", 
+      dateFontFamily: "'Times New Roman', 'Sarabun', sans-serif", 
+      dateColor: "#000000",   
+      dateYPercent: 75        // 🛠️ ปรับระยะขึ้น-ลงเป็นเปอร์เซ็นต์ความสูง (ค่า 0 ถึง 100) เช่น 64 คืออยู่ที่ความสูง 64% ของภาพ
     };
 
     let localQueueData = [];
@@ -156,8 +159,6 @@
         preloadedTemplateImage = new Image();
         preloadedTemplateImage.crossOrigin = "Anonymous";
         preloadedTemplateImage.src = TEMPLATE_IMAGE_URL; 
-        document.fonts.load(TEXT_CONFIG.nameFont);
-        document.fonts.load(TEXT_CONFIG.dateFont);
     }
 
     async function loadSessions() {
@@ -284,26 +285,31 @@
         }
 
         function drawCanvasContent(imgObj) {
-            // บังคับกางแกนโครงสร้าง Canvas พิกเซลจริงให้เท่ากับความละเอียดไฟล์รูปภาพเพื่อความคมชัด 100%
+            const ctx = canvas.getContext('2d');
+            
+            // 🌟 ล็อกตามมิติจริงของไฟล์รูปภาพแท้ ภาพใบประกาศจึงเต็มใบ ครบ 4 มุม สัดส่วนเป๊ะเสมอ
             canvas.width = imgObj.naturalWidth || 800;
             canvas.height = imgObj.naturalHeight || 600;
             
-            const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height); 
             ctx.drawImage(imgObj, 0, 0, canvas.width, canvas.height); 
 
-            ctx.textAlign = TEXT_CONFIG.align;
             ctx.textBaseline = "middle"; 
+            ctx.textAlign = "center"; // ล็อกพิกัดอักษรให้อยู่กึ่งกลางแนวนอนถาวร 100%
 
-            // 1. สลักชื่อภาษาอังกฤษตัวพิมพ์ใหญ่ สีดำสนิท
-            ctx.font = TEXT_CONFIG.nameFont;
+            // 🌟 แปลงสัดส่วนเปอร์เซ็นต์ที่พี่กรอกด้านบนสุด ให้เป็นความสูงพิกเซลจริงอัตโนมัติตามขนาดรูป
+            const computedNameY = (canvas.height * TEXT_CONFIG.nameYPercent) / 100;
+            const computedDateY = (canvas.height * TEXT_CONFIG.dateYPercent) / 100;
+
+            // 1. วาดชื่อผู้เรียน ตรงกลางแผ่นตามระดับเปอร์เซ็นต์ความสูง
+            ctx.font = `${TEXT_CONFIG.nameFontWeight} ${TEXT_CONFIG.nameFontSize}px ${TEXT_CONFIG.nameFontFamily}`;
             ctx.fillStyle = TEXT_CONFIG.nameColor;
-            ctx.fillText(fullNameStr, TEXT_CONFIG.xOffset, TEXT_CONFIG.nameYOffset);
+            ctx.fillText(fullNameStr, canvas.width / 2, computedNameY);
 
-            // 2. สลักวันที่ฟอร์แมตภาษาอังกฤษ สีดำสนิท
-            ctx.font = TEXT_CONFIG.dateFont;
+            // 2. วาดวันที่อบรมอังกฤษ ตรงกลางแผ่นตามระดับเปอร์เซ็นต์ความสูง
+            ctx.font = `${TEXT_CONFIG.dateFontWeight} ${TEXT_CONFIG.dateFontSize}px ${TEXT_CONFIG.dateFontFamily}`;
             ctx.fillStyle = TEXT_CONFIG.dateColor;
-            ctx.fillText(dateStr, TEXT_CONFIG.xOffset, TEXT_CONFIG.dateYOffset);
+            ctx.fillText(dateStr, canvas.width / 2, computedDateY);
 
             loader.classList.add('hidden');
             canvas.classList.remove('hidden');
